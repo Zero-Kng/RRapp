@@ -15,3 +15,6 @@ select = ["E", "F", "I", "B", "UP", "DJ", "S"]
 "tests/*" = ["S101", "S105", "S106", "S608"]
 # SQL do DuckDB montado com valores escapados por _texto_sql (nunca vem de usuários do app)
 "lugares/fsq/extracao.py" = ["S608"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["config", "contas", "lugares", "factories", "helpers_fsq"]
