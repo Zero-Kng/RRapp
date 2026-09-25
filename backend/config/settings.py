@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "django_otp.plugins.otp_totp",
     "contas",
     "lugares",
+    "registros",
 ]
 
 MIDDLEWARE = [

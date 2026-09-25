@@ -1,7 +1,10 @@
+import datetime
+
 import factory
 
 from contas.models import Usuario
 from lugares.models import Categoria, Cidade, Restaurante
+from registros.models import Registro
 
 
 class CidadeFactory(factory.django.DjangoModelFactory):
@@ -40,3 +43,13 @@ class UsuarioFactory(factory.django.DjangoModelFactory):
     username = factory.Sequence(lambda n: f"usuario{n}")
     email = factory.LazyAttribute(lambda o: f"{o.username}@example.com")
     password = factory.django.Password("senha-forte-123")
+
+
+class RegistroFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Registro
+
+    usuario = factory.SubFactory(UsuarioFactory)
+    restaurante = factory.SubFactory(RestauranteFactory)
+    data_visita = datetime.date(2026, 9, 1)
+    nota = 8

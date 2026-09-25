@@ -42,3 +42,12 @@ def usuario(db):
 def api_logado(api, usuario):
     api.force_authenticate(usuario)
     return api
+
+
+@pytest.fixture
+def admin_logado(client, django_user_model):
+    usuario = django_user_model.objects.create_superuser(
+        "admin", "admin@example.com", "senha-forte-123"
+    )
+    client.force_login(usuario)
+    return client
