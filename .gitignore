@@ -31,3 +31,6 @@ data/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Rascunhos das ferramentas de planejamento
+.superpowers/
