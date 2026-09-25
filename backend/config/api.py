@@ -11,7 +11,7 @@ from rest_framework.views import exception_handler
 CODIGOS = {
     "not_authenticated": "nao_autenticado",
     "authentication_failed": "nao_autenticado",
-    "token_not_valid": "nao_autenticado",
+    "token_not_valid": "nao_autenticado",  # nosec B105 (código de erro, não é senha)
     "permission_denied": "sem_permissao",
     "not_found": "nao_encontrado",
     "method_not_allowed": "metodo_nao_permitido",
