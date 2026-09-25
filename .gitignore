@@ -13,6 +13,7 @@ venv/
 htmlcov/
 .mypy_cache/
 staticfiles/
+media/
 .ruff_cache/
 
 # Node
