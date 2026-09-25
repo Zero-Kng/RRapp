@@ -112,7 +112,8 @@ def _importar_linha(
             return
         restaurante.nome = nome
         restaurante.endereco = _cortar(linha.get("address"), 255)
-        restaurante.bairro = bairro
+        if localizador is not None:  # sem mapa, não há bairro novo: mantém o atual
+            restaurante.bairro = bairro
         restaurante.latitude = _coordenada(latitude)
         restaurante.longitude = _coordenada(longitude)
         if fechado and restaurante.status != Restaurante.Status.FECHADO:

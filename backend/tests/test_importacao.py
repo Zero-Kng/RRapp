@@ -70,6 +70,17 @@ def test_reimportar_atualiza_sem_duplicar_e_mantem_slug(rio):
 
 
 @pytest.mark.django_db
+def test_reimportar_sem_mapa_de_bairros_preserva_o_bairro(rio):
+    importar_restaurantes([linha()], rio, LocalizadorFalso())
+
+    importar_restaurantes([linha(name="Bar do Zé Novo")], rio)
+
+    restaurante = Restaurante.objects.get()
+    assert restaurante.nome == "Bar do Zé Novo"
+    assert restaurante.bairro == "Botafogo"
+
+
+@pytest.mark.django_db
 def test_linha_sem_nome_e_ignorada(rio):
     resultado = importar_restaurantes([linha(name="   "), linha(name=None)], rio)
 
