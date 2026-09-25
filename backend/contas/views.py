@@ -1,8 +1,9 @@
 from django.contrib.auth.models import update_last_login
 from django.db.models import Q
 from django.middleware.csrf import get_token
+from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema
-from rest_framework import serializers, status
+from rest_framework import generics, serializers, status
 from rest_framework.exceptions import AuthenticationFailed, ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -24,11 +25,13 @@ from contas.autenticacao import (
 from contas.models import Usuario
 from contas.senhas import enviar_email_redefinicao, usuario_do_link
 from contas.serializers import (
+    AtualizarPerfilSerializer,
     CadastroSerializer,
     EsqueciSenhaSerializer,
     EuSerializer,
     LoginSerializer,
     MensagemSerializer,
+    PerfilPublicoSerializer,
     RedefinirSenhaSerializer,
     SessaoSerializer,
     TrocarSenhaSerializer,
@@ -210,3 +213,22 @@ class TrocarSenhaView(APIView):
         resposta = Response({})
         emitir_sessao(resposta, usuario, request)
         return resposta
+
+
+class PerfilPublicoView(generics.RetrieveAPIView):
+    serializer_class = PerfilPublicoSerializer
+    permission_classes = [AllowAny]
+
+    def get_object(self):
+        return get_object_or_404(Usuario, username__iexact=self.kwargs["username"], is_active=True)
+
+
+class EditarPerfilView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(request=AtualizarPerfilSerializer, responses={200: EuSerializer})
+    def patch(self, request):
+        serializer = AtualizarPerfilSerializer(request.user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        usuario = serializer.save()
+        return Response(EuSerializer(usuario, context={"request": request}).data)

@@ -11,4 +11,6 @@ urlpatterns = [
     path("auth/senha/esqueci", views.EsqueciSenhaView.as_view(), name="esqueci-senha"),
     path("auth/senha/redefinir", views.RedefinirSenhaView.as_view(), name="redefinir-senha"),
     path("eu/senha", views.TrocarSenhaView.as_view(), name="trocar-senha"),
+    path("eu/perfil", views.EditarPerfilView.as_view(), name="editar-perfil"),
+    path("usuarios/<str:username>", views.PerfilPublicoView.as_view(), name="perfil"),
 ]
