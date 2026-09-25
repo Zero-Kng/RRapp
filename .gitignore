@@ -12,6 +12,7 @@ venv/
 .coverage
 htmlcov/
 .mypy_cache/
+staticfiles/
 .ruff_cache/
 
 # Node
