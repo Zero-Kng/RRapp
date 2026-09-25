@@ -9,12 +9,12 @@ from contas.models import Usuario
 from factories import RegistroFactory
 from registros.models import Registro
 
-URL = "/api/v1/eu"
+URL = "/api/v1/eu/excluir"
 
 
 @pytest.mark.django_db
 def test_senha_errada_nao_exclui(api_logado, usuario):
-    resposta = api_logado.delete(URL, {"senha": "errada"})
+    resposta = api_logado.post(URL, {"senha": "errada"})
 
     assert resposta.status_code == 400
     assert resposta.json()["erro"]["codigo"] == "senha_incorreta"
@@ -40,7 +40,7 @@ def test_excluir_apaga_tudo_e_recalcula_a_media(api, usuario, settings, tmp_path
     usuario.refresh_from_db()
     caminho_avatar = usuario.avatar.path
 
-    resposta = api.delete(URL, {"senha": "senha-forte-123"})
+    resposta = api.post(URL, {"senha": "senha-forte-123"})
 
     assert resposta.status_code == 204
     assert resposta.cookies["rrapp_renovacao"].value == ""
@@ -55,4 +55,13 @@ def test_excluir_apaga_tudo_e_recalcula_a_media(api, usuario, settings, tmp_path
 
 @pytest.mark.django_db
 def test_excluir_sem_login(api):
-    assert api.delete(URL, {"senha": "x"}).status_code == 401
+    assert api.post(URL, {"senha": "x"}).status_code == 401
+
+
+@pytest.mark.django_db
+def test_senha_da_exclusao_aparece_no_esquema_openapi(api):
+    esquema = api.get("/api/schema", {"format": "json"}).json()
+
+    corpo = esquema["paths"]["/api/v1/eu/excluir"]["post"]["requestBody"]
+    referencia = corpo["content"]["application/json"]["schema"]["$ref"].split("/")[-1]
+    assert "senha" in esquema["components"]["schemas"][referencia]["properties"]

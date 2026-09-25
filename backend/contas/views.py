@@ -278,10 +278,12 @@ class CriticasView(generics.ListAPIView):
 
 
 class ExcluirContaView(APIView):
+    """POST (e não DELETE) para que o corpo com a senha apareça no OpenAPI."""
+
     permission_classes = [IsAuthenticated]
 
     @extend_schema(request=ConfirmarSenhaSerializer, responses={204: None})
-    def delete(self, request):
+    def post(self, request):
         serializer = ConfirmarSenhaSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         usuario = request.user
