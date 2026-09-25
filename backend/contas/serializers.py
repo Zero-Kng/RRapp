@@ -109,3 +109,10 @@ class TrocarSenhaSerializer(serializers.Serializer):
 
 class MensagemSerializer(serializers.Serializer):
     mensagem = serializers.CharField()
+
+
+class UsuarioResumoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Usuario
+        fields = ["username", "nome_exibicao", "avatar"]
+        read_only_fields = fields
