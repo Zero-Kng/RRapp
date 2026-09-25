@@ -10,6 +10,7 @@ urlpatterns = [
     path(settings.ADMIN_URL, admin.site.urls),
     path("api/v1/saude", saude, name="saude"),
     path("api/v1/", include("contas.urls")),
+    path("api/v1/", include("lugares.urls")),
     path("api/schema", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs", SpectacularSwaggerSplitView.as_view(url_name="schema"), name="docs"),
 ]
