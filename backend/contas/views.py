@@ -18,13 +18,26 @@ from contas.autenticacao import (
     apagar_cookie,
     definir_cookie,
     emitir_sessao,
+    encerrar_sessoes,
     exigir_csrf,
 )
 from contas.models import Usuario
-from contas.serializers import CadastroSerializer, EuSerializer, LoginSerializer, SessaoSerializer
+from contas.senhas import enviar_email_redefinicao, usuario_do_link
+from contas.serializers import (
+    CadastroSerializer,
+    EsqueciSenhaSerializer,
+    EuSerializer,
+    LoginSerializer,
+    MensagemSerializer,
+    RedefinirSenhaSerializer,
+    SessaoSerializer,
+    TrocarSenhaSerializer,
+    validar_nova_senha,
+)
 
 MENSAGEM_CREDENCIAIS = "E-mail/usuário ou senha incorretos."
 MENSAGEM_SESSAO = "Sua sessão expirou. Entre novamente."
+MENSAGEM_ESQUECI = "Se o e-mail estiver cadastrado, enviaremos um link para redefinir a senha."
 
 
 def _resposta_de_sessao(request, usuario, status_http=status.HTTP_200_OK) -> Response:
@@ -138,4 +151,62 @@ class LogoutView(APIView):
                 pass  # token já inválido: nada a fazer
         resposta = Response(status=status.HTTP_204_NO_CONTENT)
         apagar_cookie(resposta)
+        return resposta
+
+
+class EsqueciSenhaView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "senha"
+
+    @extend_schema(request=EsqueciSenhaSerializer, responses={202: MensagemSerializer})
+    def post(self, request):
+        serializer = EsqueciSenhaSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data["email"].strip()
+        usuario = Usuario.objects.filter(email__iexact=email, is_active=True).first()
+        if usuario is not None:
+            enviar_email_redefinicao(usuario)
+        return Response({"mensagem": MENSAGEM_ESQUECI}, status=status.HTTP_202_ACCEPTED)
+
+
+class RedefinirSenhaView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "senha"
+
+    @extend_schema(request=RedefinirSenhaSerializer, responses={204: None})
+    def post(self, request):
+        serializer = RedefinirSenhaSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        dados = serializer.validated_data
+        usuario = usuario_do_link(dados["uid"], dados["token"])
+        if usuario is None:
+            raise ErroApi("link_invalido", "Este link é inválido ou expirou. Peça um novo.")
+        validar_nova_senha(dados["nova_senha"], usuario)
+        usuario.set_password(dados["nova_senha"])
+        usuario.save(update_fields=["password"])
+        encerrar_sessoes(usuario)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class TrocarSenhaView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(request=TrocarSenhaSerializer, responses={200: AcessoSerializer})
+    def post(self, request):
+        serializer = TrocarSenhaSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        dados = serializer.validated_data
+        usuario = request.user
+        if not usuario.check_password(dados["senha_atual"]):
+            raise ErroApi("senha_incorreta", "A senha atual está incorreta.")
+        validar_nova_senha(dados["nova_senha"], usuario)
+        usuario.set_password(dados["nova_senha"])
+        usuario.save(update_fields=["password"])
+        encerrar_sessoes(usuario)
+        resposta = Response({})
+        emitir_sessao(resposta, usuario, request)
         return resposta

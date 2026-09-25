@@ -83,3 +83,29 @@ class SessaoSerializer(serializers.Serializer):
     usuario = EuSerializer()
     acesso = serializers.CharField()
     renovacao = serializers.CharField(required=False, help_text="Só com `X-Cliente: mobile`.")
+
+
+def validar_nova_senha(senha: str, usuario: Usuario, campo: str = "nova_senha") -> None:
+    try:
+        validate_password(senha, user=usuario)
+    except DjangoValidationError as erro:
+        raise serializers.ValidationError({campo: list(erro.messages)}) from erro
+
+
+class EsqueciSenhaSerializer(serializers.Serializer):
+    email = serializers.EmailField(max_length=254)
+
+
+class RedefinirSenhaSerializer(serializers.Serializer):
+    uid = serializers.CharField(max_length=64)
+    token = serializers.CharField(max_length=128)
+    nova_senha = serializers.CharField(trim_whitespace=False, max_length=128)
+
+
+class TrocarSenhaSerializer(serializers.Serializer):
+    senha_atual = serializers.CharField(trim_whitespace=False, max_length=128)
+    nova_senha = serializers.CharField(trim_whitespace=False, max_length=128)
+
+
+class MensagemSerializer(serializers.Serializer):
+    mensagem = serializers.CharField()
