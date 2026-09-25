@@ -65,3 +65,10 @@ def test_senha_da_exclusao_aparece_no_esquema_openapi(api):
     corpo = esquema["paths"]["/api/v1/eu/excluir"]["post"]["requestBody"]
     referencia = corpo["content"]["application/json"]["schema"]["$ref"].split("/")[-1]
     assert "senha" in esquema["components"]["schemas"][referencia]["properties"]
+
+
+@pytest.mark.django_db
+def test_excluir_conta_limita_tentativas(api_logado):
+    codigos = [api_logado.post(URL, {"senha": "chute"}).status_code for _ in range(6)]
+
+    assert codigos == [400] * 5 + [429]

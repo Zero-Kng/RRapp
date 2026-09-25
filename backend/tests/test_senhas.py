@@ -125,3 +125,15 @@ def test_trocar_senha_encerra_as_outras_sessoes_e_abre_uma_nova(api, usuario):
 @pytest.mark.django_db
 def test_trocar_senha_sem_login(api):
     assert api.post(TROCAR, {"senha_atual": "a", "nova_senha": "b"}).status_code == 401
+
+
+@pytest.mark.django_db
+def test_trocar_senha_limita_tentativas(api_logado):
+    codigos = [
+        api_logado.post(
+            TROCAR, {"senha_atual": "chute", "nova_senha": "outra-senha-forte"}
+        ).status_code
+        for _ in range(6)
+    ]
+
+    assert codigos == [400] * 5 + [429]
