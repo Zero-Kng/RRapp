@@ -13,4 +13,6 @@ urlpatterns = [
     path("eu/senha", views.TrocarSenhaView.as_view(), name="trocar-senha"),
     path("eu/perfil", views.EditarPerfilView.as_view(), name="editar-perfil"),
     path("usuarios/<str:username>", views.PerfilPublicoView.as_view(), name="perfil"),
+    path("usuarios/<str:username>/diario", views.DiarioView.as_view(), name="diario"),
+    path("usuarios/<str:username>/criticas", views.CriticasView.as_view(), name="criticas"),
 ]

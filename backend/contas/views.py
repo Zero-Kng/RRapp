@@ -2,7 +2,7 @@ from django.contrib.auth.models import update_last_login
 from django.db.models import Q
 from django.middleware.csrf import get_token
 from django.shortcuts import get_object_or_404
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import generics, serializers, status
 from rest_framework.exceptions import AuthenticationFailed, ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -37,6 +37,8 @@ from contas.serializers import (
     TrocarSenhaSerializer,
     validar_nova_senha,
 )
+from registros.serializers import RegistroSerializer
+from registros.views import registros_com_relacoes
 
 MENSAGEM_CREDENCIAIS = "E-mail/usuário ou senha incorretos."
 MENSAGEM_SESSAO = "Sua sessão expirou. Entre novamente."
@@ -232,3 +234,43 @@ class EditarPerfilView(APIView):
         serializer.is_valid(raise_exception=True)
         usuario = serializer.save()
         return Response(EuSerializer(usuario, context={"request": request}).data)
+
+
+class FiltrosDiarioSerializer(serializers.Serializer):
+    ano = serializers.IntegerField(required=False, min_value=1900, max_value=2100)
+    mes = serializers.IntegerField(required=False, min_value=1, max_value=12)
+
+
+def _usuario_ativo(username: str) -> Usuario:
+    return get_object_or_404(Usuario, username__iexact=username, is_active=True)
+
+
+@extend_schema_view(get=extend_schema(parameters=[FiltrosDiarioSerializer]))
+class DiarioView(generics.ListAPIView):
+    serializer_class = RegistroSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        usuario = _usuario_ativo(self.kwargs["username"])
+        filtros = FiltrosDiarioSerializer(data=self.request.query_params)
+        filtros.is_valid(raise_exception=True)
+        registros = registros_com_relacoes().filter(usuario=usuario)
+        if "ano" in filtros.validated_data:
+            registros = registros.filter(data_visita__year=filtros.validated_data["ano"])
+        if "mes" in filtros.validated_data:
+            registros = registros.filter(data_visita__month=filtros.validated_data["mes"])
+        return registros.order_by("-data_visita", "-criado_em", "-id")
+
+
+class CriticasView(generics.ListAPIView):
+    serializer_class = RegistroSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        usuario = _usuario_ativo(self.kwargs["username"])
+        return (
+            registros_com_relacoes()
+            .filter(usuario=usuario)
+            .exclude(critica="")
+            .order_by("-criado_em", "-id")
+        )
