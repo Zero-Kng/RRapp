@@ -8,8 +8,11 @@ from registros.serializers import RegistroSerializer
 
 
 def registros_com_relacoes():
-    return Registro.objects.select_related("usuario", "restaurante__cidade").prefetch_related(
-        "restaurante__categorias"
+    """Registros visíveis: os de usuários suspensos somem da API."""
+    return (
+        Registro.objects.filter(usuario__is_active=True)
+        .select_related("usuario", "restaurante__cidade")
+        .prefetch_related("restaurante__categorias")
     )
 
 
