@@ -9,7 +9,7 @@ from rest_framework import serializers
 
 TAMANHO_MAXIMO = 2 * 1024 * 1024
 LADO_MAXIMO = 512
-PIXELS_MAXIMOS = 25_000_000  # evita "bombas de descompressão"
+PIXELS_MAXIMOS = 12_000_000  # evita "bombas de descompressão" e picos de memória
 FORMATOS_ACEITOS = {"JPEG", "PNG", "WEBP"}
 MENSAGEM_FORMATO = "Envie uma imagem JPG, PNG ou WebP."
 

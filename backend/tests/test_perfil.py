@@ -141,3 +141,24 @@ def test_remover_avatar(api_logado, usuario):
     assert resposta.json()["avatar"] is None
     usuario.refresh_from_db()
     assert not usuario.avatar
+
+
+@pytest.mark.django_db
+def test_avatar_acima_de_12_megapixels_e_recusado(api_logado):
+    resposta = api_logado.patch(
+        EDITAR, {"avatar": imagem(tamanho=(4000, 3500))}, format="multipart"
+    )
+
+    assert resposta.status_code == 400
+    assert "avatar" in resposta.json()["erro"]["campos"]
+
+
+@pytest.mark.django_db
+def test_edicao_de_perfil_e_limitada(api_logado, monkeypatch):
+    from config.api import ThrottleEscrita
+
+    monkeypatch.setattr(ThrottleEscrita, "THROTTLE_RATES", {"escrita": "2/min"})
+
+    codigos = [api_logado.patch(EDITAR, {"bio": "oi"}).status_code for _ in range(3)]
+
+    assert codigos == [200, 200, 429]

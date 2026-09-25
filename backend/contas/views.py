@@ -13,7 +13,7 @@ from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from config.api import ErroApi
+from config.api import ErroApi, ThrottleEscrita
 from contas.autenticacao import (
     COOKIE_RENOVACAO,
     apagar_cookie,
@@ -200,6 +200,8 @@ class RedefinirSenhaView(APIView):
 
 class TrocarSenhaView(APIView):
     permission_classes = [IsAuthenticated]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "senha"
 
     @extend_schema(request=TrocarSenhaSerializer, responses={200: AcessoSerializer})
     def post(self, request):
@@ -228,6 +230,8 @@ class PerfilPublicoView(generics.RetrieveAPIView):
 
 class EditarPerfilView(APIView):
     permission_classes = [IsAuthenticated]
+    throttle_classes = [ThrottleEscrita]
+    throttle_scope = "escrita"
 
     @extend_schema(request=AtualizarPerfilSerializer, responses={200: EuSerializer})
     def patch(self, request):
@@ -281,6 +285,8 @@ class ExcluirContaView(APIView):
     """POST (e não DELETE) para que o corpo com a senha apareça no OpenAPI."""
 
     permission_classes = [IsAuthenticated]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "senha"  # limita chutes de senha com um token roubado
 
     @extend_schema(request=ConfirmarSenhaSerializer, responses={204: None})
     def post(self, request):
