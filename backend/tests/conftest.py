@@ -46,8 +46,16 @@ def api_logado(api, usuario):
 
 @pytest.fixture
 def admin_logado(client, django_user_model):
+    """Superusuário logado e com o segundo fator (TOTP) já verificado na sessão."""
+    from django_otp import DEVICE_ID_SESSION_KEY
+    from django_otp.plugins.otp_totp.models import TOTPDevice
+
     usuario = django_user_model.objects.create_superuser(
         "admin", "admin@example.com", "senha-forte-123"
     )
+    dispositivo = TOTPDevice.objects.create(user=usuario, name="teste", confirmed=True)
     client.force_login(usuario)
+    sessao = client.session
+    sessao[DEVICE_ID_SESSION_KEY] = dispositivo.persistent_id
+    sessao.save()
     return client
