@@ -41,6 +41,7 @@ jobs:
       - run: ruff check .
       - run: ruff format --check .
       - run: pytest
+      - run: python manage.py spectacular --validate --fail-on-warn --file /tmp/schema.yml
       - run: bandit -q -r . -x ./tests
       - run: pip-audit -r requirements.txt
       - name: check --deploy
