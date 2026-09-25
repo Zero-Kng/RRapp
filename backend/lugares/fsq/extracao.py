@@ -50,10 +50,10 @@ def extrair_restaurantes(
                      FROM read_parquet({_texto_sql(_caminho(categorias))}) AS c
                      WHERE c.level1_category_name = {_texto_sql(CATEGORIA_RAIZ)})
                   )) > 0
-        """
+        """  # nosec B608 — valores escapados por _texto_sql ou convertidos em float
         destino_sql = _texto_sql(_caminho(destino))
         con.execute(f"COPY ({consulta}) TO {destino_sql} (FORMAT parquet)")
-        return con.execute(f"SELECT count(*) FROM read_parquet({destino_sql})").fetchone()[0]
+        return con.execute(f"SELECT count(*) FROM read_parquet({destino_sql})").fetchone()[0]  # nosec B608
     finally:
         con.close()
 
@@ -61,7 +61,7 @@ def extrair_restaurantes(
 def ler_linhas(caminho: Path) -> Iterator[dict]:
     con = duckdb.connect()
     try:
-        cursor = con.execute(f"SELECT * FROM read_parquet({_texto_sql(_caminho(caminho))})")
+        cursor = con.execute(f"SELECT * FROM read_parquet({_texto_sql(_caminho(caminho))})")  # nosec B608
         colunas = [descricao[0] for descricao in cursor.description]
         while lote := cursor.fetchmany(1000):
             for linha in lote:
