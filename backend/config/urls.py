@@ -2,9 +2,13 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
+from django_otp.admin import OTPAdminSite
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerSplitView
 
 from config.views import saude
+
+if settings.ADMIN_EXIGIR_2FA:
+    admin.site.__class__ = OTPAdminSite  # exige o código do app autenticador no login
 
 urlpatterns = [
     path(settings.ADMIN_URL, admin.site.urls),

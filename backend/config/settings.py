@@ -22,6 +22,11 @@ ADMIN_URL = env("ADMIN_URL", default="admin-local/" if DEBUG else "")
 if not ADMIN_URL.endswith("/"):
     raise ImproperlyConfigured("Defina ADMIN_URL terminando com '/' (ex.: painel-secreto/).")
 
+# Segundo fator (app autenticador) obrigatório no Admin; só pode ser desligado localmente.
+ADMIN_EXIGIR_2FA = env.bool("ADMIN_EXIGIR_2FA", default=True)
+if not DEBUG and not ADMIN_EXIGIR_2FA:
+    raise ImproperlyConfigured("O 2FA do Admin é obrigatório em produção (ADMIN_EXIGIR_2FA).")
+
 # Endereço do frontend (usado nos links de e-mail) e origens autorizadas a chamar a API
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:5173")
 FRONTEND_ORIGENS = env.list("FRONTEND_ORIGENS", default=["http://localhost:5173"])

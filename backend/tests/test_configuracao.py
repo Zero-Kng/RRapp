@@ -37,3 +37,12 @@ def test_producao_aceita_admin_url_valida():
     resultado = carregar_settings(DEBUG="False", ADMIN_URL="painel-secreto/")
 
     assert resultado.returncode == 0, resultado.stderr
+
+
+def test_producao_exige_2fa_no_admin():
+    resultado = carregar_settings(
+        DEBUG="False", ADMIN_URL="painel-secreto/", ADMIN_EXIGIR_2FA="False"
+    )
+
+    assert resultado.returncode != 0
+    assert "2FA" in resultado.stderr
