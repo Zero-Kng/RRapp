@@ -13,6 +13,7 @@ venv/
 htmlcov/
 .mypy_cache/
 staticfiles/
+media/
 .ruff_cache/
 
 # Node
@@ -30,3 +31,6 @@ data/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Rascunhos das ferramentas de planejamento
+.superpowers/

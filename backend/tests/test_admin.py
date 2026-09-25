@@ -3,15 +3,6 @@ import pytest
 from factories import CategoriaFactory, RestauranteFactory
 
 
-@pytest.fixture
-def admin_logado(client, django_user_model):
-    usuario = django_user_model.objects.create_superuser(
-        "admin", "admin@example.com", "senha-forte-123"
-    )
-    client.force_login(usuario)
-    return client
-
-
 def url(settings, caminho):
     return f"/{settings.ADMIN_URL}{caminho}"
 
@@ -65,3 +56,15 @@ def test_lista_de_cidades_mostra_o_rio(admin_logado, settings):
     resposta = admin_logado.get(url(settings, "lugares/cidade/"))
 
     assert "Rio de Janeiro" in resposta.content.decode()
+
+
+@pytest.mark.django_db
+def test_lista_de_registros_no_admin(admin_logado, settings):
+    from factories import RegistroFactory
+
+    RegistroFactory(nota=7, restaurante__nome="Bar do Zé")
+
+    resposta = admin_logado.get(url(settings, "registros/registro/"))
+
+    assert resposta.status_code == 200
+    assert "3.5 ★" in resposta.content.decode()
