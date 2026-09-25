@@ -29,3 +29,16 @@ def api():
     from rest_framework.test import APIClient
 
     return APIClient()
+
+
+@pytest.fixture
+def usuario(db):
+    from factories import UsuarioFactory
+
+    return UsuarioFactory(username="ana", email="ana@example.com")
+
+
+@pytest.fixture
+def api_logado(api, usuario):
+    api.force_authenticate(usuario)
+    return api

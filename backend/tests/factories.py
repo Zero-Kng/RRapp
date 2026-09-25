@@ -1,5 +1,6 @@
 import factory
 
+from contas.models import Usuario
 from lugares.models import Categoria, Cidade, Restaurante
 
 
@@ -30,3 +31,12 @@ class RestauranteFactory(factory.django.DjangoModelFactory):
     slug = factory.Sequence(lambda n: f"restaurante-{n}")
     bairro = "Botafogo"
     cidade = factory.SubFactory(CidadeFactory)
+
+
+class UsuarioFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Usuario
+
+    username = factory.Sequence(lambda n: f"usuario{n}")
+    email = factory.LazyAttribute(lambda o: f"{o.username}@example.com")
+    password = factory.django.Password("senha-forte-123")
