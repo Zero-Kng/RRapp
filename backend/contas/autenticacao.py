@@ -3,6 +3,7 @@
 from django.conf import settings
 from rest_framework.authentication import CSRFCheck
 from rest_framework.exceptions import PermissionDenied
+from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 from rest_framework_simplejwt.tokens import RefreshToken
 
 COOKIE_RENOVACAO = "rrapp_renovacao"
@@ -47,3 +48,13 @@ def exigir_csrf(request) -> None:
     motivo = verificador.process_view(request, None, (), {})
     if motivo:
         raise PermissionDenied(f"Falha na verificação CSRF: {motivo}")
+
+
+def encerrar_sessoes(usuario) -> None:
+    """Invalida todos os tokens de renovação do usuário (troca de senha, exclusão, incidente).
+
+    Tokens de acesso já emitidos continuam valendo até expirar (no máximo 15 minutos).
+    """
+    pendentes = OutstandingToken.objects.filter(user=usuario, blacklistedtoken__isnull=True)
+    for token in pendentes:
+        BlacklistedToken.objects.get_or_create(token=token)
