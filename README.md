@@ -38,6 +38,20 @@ Um comando por linha. O Windows PowerShell não aceita `&&`.
 - Saúde da API: http://localhost:8000/api/v1/saude
 - Admin: http://localhost:8000/admin-local/
 
+### Documentação da API
+
+Com o servidor rodando: http://localhost:8000/api/docs
+
+### 2FA do Admin
+
+O Admin exige um código de um app autenticador (Google Authenticator, Authy, Microsoft Authenticator...). Para configurar o seu usuário, rode uma vez (PowerShell, na pasta `backend`):
+
+    .venv\Scripts\python.exe manage.py configurar_2fa seu_usuario
+
+Escaneie o QR code com o app. No login do Admin, informe usuário, senha e o código de 6 dígitos que o app mostra.
+
+Perdeu o celular? Rode o mesmo comando com `--recriar` para gerar um autenticador novo.
+
 ## Testes
 
     cd backend
