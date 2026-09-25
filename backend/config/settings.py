@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import environ
+from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -12,7 +13,10 @@ if arquivo_env.exists():
 SECRET_KEY = env("SECRET_KEY")
 DEBUG = env("DEBUG")
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
-ADMIN_URL = env("ADMIN_URL", default="admin-local/")
+# Em produção a URL do Admin precisa ser definida (e secreta); localmente há um padrão.
+ADMIN_URL = env("ADMIN_URL", default="admin-local/" if DEBUG else "")
+if not ADMIN_URL.endswith("/"):
+    raise ImproperlyConfigured("Defina ADMIN_URL terminando com '/' (ex.: painel-secreto/).")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
