@@ -4,10 +4,14 @@ from django.conf import settings
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
+from contas.avatares import processar_avatar
 from contas.models import Usuario
+from lugares.models import Cidade
 from lugares.serializers import CidadeSerializer
+from registros.estatisticas import numeros_do_usuario
 
 PADRAO_USERNAME = re.compile(r"[a-z0-9_.]{3,30}")
 USERNAMES_RESERVADOS = {"admin", "api", "eu", "rrapp", "suporte", "configuracoes"}
@@ -116,3 +120,50 @@ class UsuarioResumoSerializer(serializers.ModelSerializer):
         model = Usuario
         fields = ["username", "nome_exibicao", "avatar"]
         read_only_fields = fields
+
+
+class NumerosSerializer(serializers.Serializer):
+    visitados = serializers.IntegerField()
+    visitados_este_ano = serializers.IntegerField()
+
+
+class PerfilPublicoSerializer(serializers.ModelSerializer):
+    cidade = CidadeSerializer(read_only=True)
+    membro_desde = serializers.DateTimeField(source="date_joined", read_only=True)
+    numeros = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Usuario
+        fields = ["username", "nome_exibicao", "bio", "avatar", "cidade", "membro_desde", "numeros"]
+        read_only_fields = fields
+
+    @extend_schema_field(NumerosSerializer)
+    def get_numeros(self, usuario: Usuario) -> dict:
+        return numeros_do_usuario(usuario)
+
+
+class AtualizarPerfilSerializer(serializers.ModelSerializer):
+    cidade = serializers.SlugRelatedField(
+        slug_field="slug", queryset=Cidade.objects.all(), required=False, allow_null=True
+    )
+    avatar = serializers.FileField(required=False, write_only=True)
+    remover_avatar = serializers.BooleanField(required=False, write_only=True)
+
+    class Meta:
+        model = Usuario
+        fields = ["nome_exibicao", "bio", "cidade", "avatar", "remover_avatar"]
+
+    def validate_avatar(self, arquivo):
+        return processar_avatar(arquivo)
+
+    def update(self, usuario: Usuario, dados: dict) -> Usuario:
+        novo_avatar = dados.pop("avatar", None)
+        remover = dados.pop("remover_avatar", False)
+        if (novo_avatar or remover) and usuario.avatar:
+            usuario.avatar.delete(save=False)
+        if novo_avatar:
+            usuario.avatar = novo_avatar
+        for campo, valor in dados.items():
+            setattr(usuario, campo, valor)
+        usuario.save()
+        return usuario
