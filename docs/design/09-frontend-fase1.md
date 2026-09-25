@@ -62,7 +62,8 @@ O servidor do Vite faz **proxy** de `/api` e `/media` para o Django (`localhost:
 - O token de acesso fica **só na memória** (nunca em `localStorage`).
 - Ao abrir o app, ele tenta `POST /auth/token/renovar` (usando o cookie e o `X-CSRFToken`) para recuperar a sessão.
 - Uma resposta `401` numa chamada autenticada faz o app renovar **uma vez** e repetir a requisição. Se a renovação falhar, ele leva para `/entrar?voltar=<rota atual>`.
-- Renovações simultâneas são **agrupadas numa só**, para duas abas ou chamadas paralelas não se deslogarem mutuamente.
+- Renovações simultâneas **na mesma aba** são agrupadas numa só.
+- Entre abas, o cookie é compartilhado. Se a renovação falhar, o app **tenta mais uma vez** após um instante, porque outra aba pode ter acabado de renovar e atualizado o cookie. Só depois da segunda falha ele leva para o login.
 
 ### Componentes
 
