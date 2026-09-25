@@ -27,6 +27,7 @@ from contas.senhas import enviar_email_redefinicao, usuario_do_link
 from contas.serializers import (
     AtualizarPerfilSerializer,
     CadastroSerializer,
+    ConfirmarSenhaSerializer,
     EsqueciSenhaSerializer,
     EuSerializer,
     LoginSerializer,
@@ -274,3 +275,22 @@ class CriticasView(generics.ListAPIView):
             .exclude(critica="")
             .order_by("-criado_em", "-id")
         )
+
+
+class ExcluirContaView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(request=ConfirmarSenhaSerializer, responses={204: None})
+    def delete(self, request):
+        serializer = ConfirmarSenhaSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        usuario = request.user
+        if not usuario.check_password(serializer.validated_data["senha"]):
+            raise ErroApi("senha_incorreta", "A senha está incorreta.")
+        encerrar_sessoes(usuario)
+        if usuario.avatar:
+            usuario.avatar.delete(save=False)
+        usuario.delete()  # registros vão em cascata; os signals recalculam as médias
+        resposta = Response(status=status.HTTP_204_NO_CONTENT)
+        apagar_cookie(resposta)
+        return resposta

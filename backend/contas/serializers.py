@@ -167,3 +167,7 @@ class AtualizarPerfilSerializer(serializers.ModelSerializer):
             setattr(usuario, campo, valor)
         usuario.save()
         return usuario
+
+
+class ConfirmarSenhaSerializer(serializers.Serializer):
+    senha = serializers.CharField(trim_whitespace=False, max_length=128)
