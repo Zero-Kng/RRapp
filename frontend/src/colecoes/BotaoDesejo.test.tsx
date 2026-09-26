@@ -70,7 +70,10 @@ test("clique duplo faz uma requisição só", async () => {
   fireEvent.click(botao);
   fireEvent.click(botao);
 
-  await waitFor(() => expect(botao).toBeDisabled());
+  // Indisponível para leitor de tela, mas sem `disabled`: um botão focado que vira disabled
+  // perde o foco do teclado, e quem usa teclado não ouve o novo estado
+  await waitFor(() => expect(botao).toHaveAttribute("aria-disabled", "true"));
+  expect(botao).not.toBeDisabled();
   liberar();
   await waitFor(() => expect(botao).toHaveAttribute("aria-pressed", "true"));
   expect(metodos).toEqual(["PUT"]);
