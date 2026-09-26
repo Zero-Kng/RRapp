@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { X } from "lucide-react";
 import { Dialog } from "radix-ui";
 import { useId, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { api } from "../api/cliente";
 import { aplicarErros, dados, errosDeCampo } from "../api/erros";
@@ -52,7 +52,7 @@ export function RegistrarVisita({ restaurante, aberto, aoMudarAberto }: Props) {
     handleSubmit,
     setError,
     reset,
-    watch,
+    control,
     formState: { errors },
   } = useForm<Dados>({ resolver: zodResolver(esquema), defaultValues: valoresIniciais() });
 
@@ -100,7 +100,7 @@ export function RegistrarVisita({ restaurante, aberto, aoMudarAberto }: Props) {
     salvar.mutate({ ...valores, nota });
   }
 
-  const tamanhoCritica = watch("critica")?.length ?? 0;
+  const tamanhoCritica = useWatch({ control, name: "critica" })?.length ?? 0;
 
   return (
     <Dialog.Root open={aberto} onOpenChange={(abrir) => (abrir ? aoMudarAberto(true) : fechar())}>
@@ -124,7 +124,11 @@ export function RegistrarVisita({ restaurante, aberto, aoMudarAberto }: Props) {
             </Dialog.Close>
           </div>
 
-          <form onSubmit={handleSubmit(enviar)} noValidate className="mt-6 flex flex-col gap-5">
+          <form
+            onSubmit={(evento) => void handleSubmit(enviar)(evento)}
+            noValidate
+            className="mt-6 flex flex-col gap-5"
+          >
             {erroGeral && <Aviso>{erroGeral}</Aviso>}
 
             <div className="flex flex-col gap-2">

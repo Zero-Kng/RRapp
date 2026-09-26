@@ -1,5 +1,5 @@
 import { fireEvent, screen } from "@testing-library/react";
-import { delay, http, HttpResponse } from "msw";
+import { http, HttpResponse } from "msw";
 import { useState } from "react";
 import { beforeEach, expect, test } from "vitest";
 import { aprazivelDetalhe, eu, pagina, registro } from "../testes/dados";
@@ -16,11 +16,11 @@ beforeEach(() => {
   corpos = [];
 });
 
-function aceitarRegistro({ atraso = 0 } = {}) {
+function aceitarRegistro({ esperar = Promise.resolve() } = {}) {
   servidor.use(
     http.post("*/api/v1/registros", async ({ request }) => {
       corpos.push(await request.json());
-      await delay(atraso);
+      await esperar;
       return HttpResponse.json(registro(), { status: 201 });
     }),
   );
@@ -74,7 +74,8 @@ test("salva só a visita, sem nota nem crítica", async () => {
 });
 
 test("clique duplo cria um único registro", async () => {
-  aceitarRegistro({ atraso: 100 });
+  let liberarResposta!: () => void;
+  aceitarRegistro({ esperar: new Promise<void>((liberar) => (liberarResposta = liberar)) });
   abrir();
   const salvar = screen.getByRole("button", { name: "Salvar" });
 
@@ -83,6 +84,7 @@ test("clique duplo cria um único registro", async () => {
   fireEvent.click(salvar);
 
   expect(await screen.findByRole("button", { name: "Salvando…" })).toBeDisabled();
+  liberarResposta();
   await screen.findByText("fechado");
   expect(corpos).toHaveLength(1);
 });
