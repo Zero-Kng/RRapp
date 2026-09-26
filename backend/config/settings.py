@@ -167,6 +167,10 @@ SPECTACULAR_SETTINGS = {
     "SWAGGER_UI_DIST": "SIDECAR",
     "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
     "REDOC_DIST": "SIDECAR",
+    "POSTPROCESSING_HOOKS": [
+        "drf_spectacular.hooks.postprocess_schema_enums",
+        "config.openapi.completar_esquema",
+    ],
 }
 
 CORS_ALLOWED_ORIGINS = FRONTEND_ORIGENS
