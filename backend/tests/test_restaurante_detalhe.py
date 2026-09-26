@@ -85,3 +85,17 @@ def test_registros_do_restaurante_so_com_critica_e_recentes_primeiro(api, restau
 @pytest.mark.django_db
 def test_registros_de_restaurante_inexistente_responde_404(api):
     assert api.get("/api/v1/restaurantes/nao-existe/registros").status_code == 404
+
+
+@pytest.mark.django_db
+def test_flag_de_desejo_no_detalhe(api, usuario):
+    from factories import DesejoFactory
+
+    restaurante = RestauranteFactory()
+    url = f"/api/v1/restaurantes/{restaurante.slug}"
+    assert api.get(url).json()["na_minha_lista_de_desejos"] is False
+
+    api.force_authenticate(usuario)
+    assert api.get(url).json()["na_minha_lista_de_desejos"] is False
+    DesejoFactory(usuario=usuario, restaurante=restaurante)
+    assert api.get(url).json()["na_minha_lista_de_desejos"] is True
