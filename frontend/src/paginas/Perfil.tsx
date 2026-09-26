@@ -199,7 +199,8 @@ export function Perfil() {
           <Criticas username={dadosPerfil.username} />
         </Tabs.Content>
         <Tabs.Content value="desejos" className="focus-visible:outline-none">
-          <Desejos username={dadosPerfil.username} ehVoce={ehVoce} />
+          {/* key: outro perfil começa na ordem e na página iniciais */}
+          <Desejos key={dadosPerfil.username} username={dadosPerfil.username} ehVoce={ehVoce} />
         </Tabs.Content>
       </Tabs.Root>
     </div>
