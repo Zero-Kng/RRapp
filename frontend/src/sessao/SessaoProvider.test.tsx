@@ -84,3 +84,26 @@ test("se a sessão expirar durante o uso, o usuário é esquecido", async () => 
 
   expect(await screen.findByText("anônimo")).toBeInTheDocument();
 });
+
+test("recuperar a sessão recarrega as consultas sem tirar os dados da tela", async () => {
+  servidor.use(
+    http.post("*/api/v1/auth/token/renovar", () => HttpResponse.json({ acesso: "t" })),
+    http.get("*/api/v1/auth/eu", () => HttpResponse.json(eu)),
+  );
+  const clienteConsultas = new QueryClient();
+  const chave = ["perfil", "ana"];
+  clienteConsultas.setQueryData(chave, { username: "ana" });
+
+  render(
+    <QueryClientProvider client={clienteConsultas}>
+      <SessaoProvider>
+        <Sonda />
+      </SessaoProvider>
+    </QueryClientProvider>,
+  );
+
+  expect(await screen.findByText("ana")).toBeInTheDocument();
+  // Zerar os dados faria a página piscar em "Carregando" e remontar (perdendo a aba escolhida)
+  expect(clienteConsultas.getQueryState(chave)?.isInvalidated).toBe(true);
+  expect(clienteConsultas.getQueryData(chave)).toEqual({ username: "ana" });
+});
