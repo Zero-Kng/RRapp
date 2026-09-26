@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { afterEach, expect, test } from "vitest";
@@ -104,6 +104,6 @@ test("recuperar a sessão recarrega as consultas sem tirar os dados da tela", as
 
   expect(await screen.findByText("ana")).toBeInTheDocument();
   // Zerar os dados faria a página piscar em "Carregando" e remontar (perdendo a aba escolhida)
-  expect(clienteConsultas.getQueryState(chave)?.isInvalidated).toBe(true);
+  await waitFor(() => expect(clienteConsultas.getQueryState(chave)?.isInvalidated).toBe(true));
   expect(clienteConsultas.getQueryData(chave)).toEqual({ username: "ana" });
 });
