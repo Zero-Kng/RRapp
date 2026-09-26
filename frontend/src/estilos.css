@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+/* Paleta: docs/design/09-frontend-fase1.md */
+:root {
+  --cor-fundo: #f7f7f8;
+  --cor-superficie: #ffffff;
+  --cor-borda: #e4e4e7;
+  --cor-texto: #18181b;
+  --cor-texto-secundario: #5f6068;
+  --cor-destaque: #1d64d8;
+  --cor-sobre-destaque: #ffffff;
+  --cor-estrela: #b97803;
+  --cor-erro: #c4322f;
+  --cor-sucesso: #15803d;
+  color-scheme: light;
+}
+
+/* Tema escuro: pelo sistema (se o usuário não fixou o claro) ou escolhido nas configurações */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]) {
+    --cor-fundo: #111214;
+    --cor-superficie: #1a1b1e;
+    --cor-borda: #2c2d31;
+    --cor-texto: #f4f4f5;
+    --cor-texto-secundario: #a1a1aa;
+    --cor-destaque: #6aa4ff;
+    --cor-sobre-destaque: #06173a;
+    --cor-estrela: #f5b83d;
+    --cor-erro: #f07370;
+    --cor-sucesso: #4ade80;
+    color-scheme: dark;
+  }
+}
+
+:root[data-tema="escuro"] {
+  --cor-fundo: #111214;
+  --cor-superficie: #1a1b1e;
+  --cor-borda: #2c2d31;
+  --cor-texto: #f4f4f5;
+  --cor-texto-secundario: #a1a1aa;
+  --cor-destaque: #6aa4ff;
+  --cor-sobre-destaque: #06173a;
+  --cor-estrela: #f5b83d;
+  --cor-erro: #f07370;
+  --cor-sucesso: #4ade80;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --color-fundo: var(--cor-fundo);
+  --color-superficie: var(--cor-superficie);
+  --color-borda: var(--cor-borda);
+  --color-texto: var(--cor-texto);
+  --color-texto-secundario: var(--cor-texto-secundario);
+  --color-destaque: var(--cor-destaque);
+  --color-sobre-destaque: var(--cor-sobre-destaque);
+  --color-estrela: var(--cor-estrela);
+  --color-erro: var(--cor-erro);
+  --color-sucesso: var(--cor-sucesso);
+}
+
+body {
+  @apply bg-fundo font-sans text-texto antialiased;
+}
