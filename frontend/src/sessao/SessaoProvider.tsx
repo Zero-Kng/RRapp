@@ -38,15 +38,19 @@ export function SessaoProvider({ children, inicial }: Props) {
     };
   }, [temInicial]);
 
-  // Parte das respostas depende de quem vê (ex.: meu_ultimo_registro): ao entrar, sair, recuperar
-  // ou perder a sessão, as consultas viram "velhas" e as da tela são buscadas de novo, sem tirar
-  // os dados da tela (zerar faria a página piscar em "Carregando" e perder a aba escolhida)
+  // Parte das respostas depende de quem vê (ex.: meu_ultimo_registro, na_minha_lista_de_desejos).
+  // De anônimo para alguém (entrar, recuperar a sessão): as consultas viram "velhas" e as da tela
+  // são buscadas de novo, sem tirar os dados da tela (zerar faria a página piscar e perder a aba).
+  // Se havia alguém antes (sair, sessão expirada, troca de conta): os dados dessa pessoa saem do
+  // cache, para quem vier depois na mesma aba não vê-los nem por um instante.
   const identidade = useRef(usuario?.username ?? null);
   useEffect(() => {
     const atual = usuario?.username ?? null;
-    if (atual === identidade.current) return;
+    const anterior = identidade.current;
+    if (atual === anterior) return;
     identidade.current = atual;
-    void clienteConsultas.invalidateQueries();
+    if (anterior === null) void clienteConsultas.invalidateQueries();
+    else void clienteConsultas.resetQueries();
   }, [usuario, clienteConsultas]);
 
   // Se a sessão expirar durante o uso (renovação falhou), esquece o usuário
