@@ -1,5 +1,8 @@
 # Quebras de linha LF em todo o repositório (o Prettier e o CI esperam LF, inclusive no Windows)
 * text=auto eol=lf
+# O cmd.exe do Windows pode se confundir com LF nos .cmd/.bat
+*.cmd text eol=crlf
+*.bat text eol=crlf
 *.png binary
 *.jpg binary
 *.webp binary
