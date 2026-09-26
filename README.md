@@ -2,6 +2,17 @@
 
 Rede social de reviews de restaurantes (inspirada no Letterboxd). Design em [`docs/`](docs/).
 
+## Abrir o app com dois cliques (Windows)
+
+Depois de configurar o backend e o frontend uma vez (seções abaixo), dê dois cliques em **`iniciar.cmd`**, na raiz do projeto, ou num atalho para ele na Área de Trabalho. Ele:
+
+1. abre o Docker Desktop, se estiver fechado, e sobe o banco;
+2. aplica as migrações pendentes;
+3. abre o backend e o frontend em duas janelas ("rrapp - backend" e "rrapp - frontend"), ou aproveita os que já estiverem rodando;
+4. abre o navegador em http://localhost:5173.
+
+Para parar, feche as duas janelas. Se algo der errado, a janela do `iniciar.cmd` fica aberta mostrando o motivo.
+
 ## Rodando o backend localmente
 
 Pré-requisitos: Python 3.14 e Docker Desktop (aberto).
