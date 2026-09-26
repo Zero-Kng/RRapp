@@ -10,4 +10,4 @@ drf-spectacular[sidecar]>=0.30
 django-cors-headers>=4.9
 django-otp>=1.7
 qrcode>=8.2
-Pillow>=12
+Pillow>=12.3.0
