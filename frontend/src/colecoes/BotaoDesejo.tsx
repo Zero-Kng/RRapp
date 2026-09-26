@@ -64,7 +64,10 @@ export function BotaoDesejo({ restaurante }: { restaurante: RestauranteDetalhe }
       <Botao
         variante="secundaria"
         aria-pressed={ativo}
-        disabled={alternar.isPending}
+        // aria-disabled (e não disabled): um botão focado que vira disabled perde o foco do
+        // teclado; os cliques durante o envio já são ignorados pela trava acima
+        aria-disabled={alternar.isPending}
+        className="aria-disabled:cursor-wait aria-disabled:opacity-60"
         onClick={aoClicar}
       >
         <IconeDesejo ativo={ativo} />
