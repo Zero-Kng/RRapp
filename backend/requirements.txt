@@ -8,6 +8,6 @@ djangorestframework>=3.18
 djangorestframework-simplejwt>=5.5.1
 drf-spectacular[sidecar]>=0.30
 django-cors-headers>=4.9
-django-otp>=1.7
+django-otp>=1.7.3
 qrcode>=8.2
 Pillow>=12.3.0
