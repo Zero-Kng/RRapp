@@ -1,0 +1,7 @@
+import { useTitulo } from "../util/titulo";
+
+// Provisório: substituído pela task da própria página.
+export function Perfil() {
+  useTitulo("Perfil");
+  return <h1 className="text-2xl font-bold">Perfil</h1>;
+}
