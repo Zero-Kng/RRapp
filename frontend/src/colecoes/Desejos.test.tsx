@@ -45,12 +45,37 @@ test("mostra os desejos mais recentes primeiro", async () => {
 });
 
 test("por bairro agrupa com um título por bairro e 'Sem bairro' no fim", async () => {
-  responder([desejo(), desejo({ restaurante: adega }), desejo({ restaurante: bar })]);
+  // Cada ordem tem a sua resposta: a de recentes, se agrupada, daria outra ordem de títulos
+  let liberarBairro!: () => void;
+  const segurarBairro = new Promise<void>((resolver) => (liberarBairro = resolver));
+  servidor.use(
+    http.get("*/api/v1/usuarios/ana", () => HttpResponse.json(perfilAna)),
+    http.get("*/api/v1/usuarios/ana/diario", () => HttpResponse.json(pagina([]))),
+    http.get("*/api/v1/usuarios/ana/desejos", async ({ request }) => {
+      const ordem = new URL(request.url).searchParams.get("ordem");
+      ordens.push(ordem ?? "");
+      if (ordem !== "bairro") {
+        return HttpResponse.json(
+          pagina([desejo({ restaurante: bar }), desejo({ restaurante: adega }), desejo()]),
+        );
+      }
+      await segurarBairro;
+      return HttpResponse.json(
+        pagina([desejo(), desejo({ restaurante: adega }), desejo({ restaurante: bar })]),
+      );
+    }),
+  );
   const { evento, painel } = await abrirAba();
   await within(painel).findByRole("link", { name: /Aprazível/ });
 
   await evento.selectOptions(within(painel).getByLabelText("Ordenar"), "bairro");
 
+  // Enquanto a resposta por bairro não chega: carregando, sem agrupar a lista antiga
+  expect(await within(painel).findByRole("status")).toHaveTextContent("Carregando…");
+  expect(within(painel).queryAllByRole("heading", { level: 3 })).toHaveLength(0);
+  expect(within(painel).getByLabelText("Ordenar")).toHaveValue("bairro");
+
+  liberarBairro();
   expect(
     await within(painel).findByRole("heading", { level: 3, name: "Sem bairro" }),
   ).toBeVisible();
@@ -60,7 +85,6 @@ test("por bairro agrupa com um título por bairro e 'Sem bairro' no fim", async 
     "Tijuca",
     "Sem bairro",
   ]);
-  expect(ordens.at(-1)).toBe("bairro");
 });
 
 test("vazio no próprio perfil ensina a guardar", async () => {

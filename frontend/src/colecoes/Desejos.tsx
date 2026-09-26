@@ -1,4 +1,4 @@
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useId, useState } from "react";
 import { api } from "../api/cliente";
 import { dados, mensagemDeErro } from "../api/erros";
@@ -45,13 +45,9 @@ export function Desejos({ username, ehVoce }: { username: string; ehVoce: boolea
           params: { path: { username }, query: { ordem, page: pagina } },
         }),
       ),
-    // Mantém a lista (e o seletor) na tela enquanto a outra ordem carrega
-    placeholderData: keepPreviousData,
   });
 
-  if (consulta.isPending) return <Carregando />;
-  if (consulta.isError) return <Aviso>{mensagemDeErro(consulta.error)}</Aviso>;
-  if (consulta.data.results.length === 0) {
+  if (consulta.isSuccess && consulta.data.results.length === 0) {
     return (
       <p className="py-10 text-center text-texto-secundario">
         {ehVoce
@@ -61,7 +57,6 @@ export function Desejos({ username, ehVoce }: { username: string; ehVoce: boolea
     );
   }
 
-  const desejos = consulta.data.results;
   return (
     <>
       <div className="mt-4 flex items-center justify-end gap-2">
@@ -81,8 +76,14 @@ export function Desejos({ username, ehVoce }: { username: string; ehVoce: boolea
           <option value="bairro">Por bairro</option>
         </select>
       </div>
-      {ordem === "bairro" ? (
-        porBairro(desejos).map(([bairro, itens]) => (
+      {consulta.isPending ? (
+        <Carregando />
+      ) : consulta.isError ? (
+        <div className="mt-4">
+          <Aviso>{mensagemDeErro(consulta.error)}</Aviso>
+        </div>
+      ) : ordem === "bairro" ? (
+        porBairro(consulta.data.results).map(([bairro, itens]) => (
           <section key={bairro} aria-label={bairro} className="mt-6 first:mt-2">
             <h3 className="text-sm font-semibold text-texto-secundario">{bairro}</h3>
             <Itens desejos={itens} />
@@ -90,15 +91,17 @@ export function Desejos({ username, ehVoce }: { username: string; ehVoce: boolea
         ))
       ) : (
         <div className="mt-2">
-          <Itens desejos={desejos} />
+          <Itens desejos={consulta.data.results} />
         </div>
       )}
-      <Paginacao
-        pagina={pagina}
-        temAnterior={consulta.data.previous !== null}
-        temProxima={consulta.data.next !== null}
-        aoMudar={setPagina}
-      />
+      {consulta.isSuccess && (
+        <Paginacao
+          pagina={pagina}
+          temAnterior={consulta.data.previous !== null}
+          temProxima={consulta.data.next !== null}
+          aoMudar={setPagina}
+        />
+      )}
     </>
   );
 }
