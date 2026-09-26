@@ -155,7 +155,7 @@ function SecaoPerfil({ usuario }: { usuario: Eu }) {
 
       <div className="flex items-center gap-4">
         <Avatar usuario={{ ...usuario, avatar: fotoAtual }} tamanho={64} />
-        <div className="flex flex-col gap-1.5">
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
           <label htmlFor="avatar" className="text-sm font-medium">
             Foto de perfil
           </label>
@@ -166,7 +166,7 @@ function SecaoPerfil({ usuario }: { usuario: Eu }) {
             onChange={aoEscolherArquivo}
             aria-invalid={erroAvatar ? true : undefined}
             aria-describedby="avatar-ajuda"
-            className="text-sm file:mr-3 file:rounded-lg file:border file:border-borda file:bg-superficie file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-texto hover:file:bg-fundo"
+            className="w-full min-w-0 text-sm file:mr-3 file:rounded-lg file:border file:border-borda file:bg-superficie file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-texto hover:file:bg-fundo"
           />
           <p
             id="avatar-ajuda"
