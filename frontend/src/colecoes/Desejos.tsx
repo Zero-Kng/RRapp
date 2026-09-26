@@ -75,7 +75,7 @@ export function Desejos({ username, ehVoce }: { username: string; ehVoce: boolea
             setOrdem(evento.target.value as Ordem);
             setPagina(1);
           }}
-          className={`${classeEntrada} w-auto py-1.5 text-sm`}
+          className={`${classeEntrada} max-w-44 py-1.5 text-sm`}
         >
           <option value="recentes">Mais recentes</option>
           <option value="bairro">Por bairro</option>
