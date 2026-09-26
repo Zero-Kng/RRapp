@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { ExternalLink, MapPin } from "lucide-react";
+import { useState } from "react";
 import { Link, useLocation, useParams } from "react-router";
 import { api } from "../api/cliente";
 import { codigoDeErro, dados, mensagemDeErro } from "../api/erros";
@@ -9,6 +10,7 @@ import { CartaoRegistro } from "../componentes/CartaoRegistro";
 import { Carregando } from "../componentes/Carregando";
 import { Histograma } from "../componentes/Histograma";
 import { NotaEstrelas } from "../componentes/NotaEstrelas";
+import { RegistrarVisita } from "../registros/RegistrarVisita";
 import { useSessao } from "../sessao/contexto";
 import { formatarData } from "../util/datas";
 import { formatarNota } from "../util/notas";
@@ -19,6 +21,7 @@ export function Restaurante() {
   const { slug = "" } = useParams();
   const { pathname } = useLocation();
   const { usuario } = useSessao();
+  const [registrando, setRegistrando] = useState(false);
 
   const detalhe = useQuery({
     queryKey: ["restaurante", slug],
@@ -103,7 +106,14 @@ export function Restaurante() {
 
       <section aria-label="Sua visita" className="flex flex-wrap items-center gap-4">
         {usuario ? (
-          <Botao>Registrar visita</Botao>
+          <>
+            <Botao onClick={() => setRegistrando(true)}>Registrar visita</Botao>
+            <RegistrarVisita
+              restaurante={restaurante}
+              aberto={registrando}
+              aoMudarAberto={setRegistrando}
+            />
+          </>
         ) : (
           <Link
             to={`/entrar?voltar=${encodeURIComponent(pathname)}`}
