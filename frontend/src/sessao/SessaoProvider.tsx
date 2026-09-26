@@ -39,13 +39,14 @@ export function SessaoProvider({ children, inicial }: Props) {
   }, [temInicial]);
 
   // Parte das respostas depende de quem vê (ex.: meu_ultimo_registro): ao entrar, sair, recuperar
-  // ou perder a sessão, as consultas são zeradas e as que estão na tela são buscadas de novo
+  // ou perder a sessão, as consultas viram "velhas" e as da tela são buscadas de novo, sem tirar
+  // os dados da tela (zerar faria a página piscar em "Carregando" e perder a aba escolhida)
   const identidade = useRef(usuario?.username ?? null);
   useEffect(() => {
     const atual = usuario?.username ?? null;
     if (atual === identidade.current) return;
     identidade.current = atual;
-    void clienteConsultas.resetQueries();
+    void clienteConsultas.invalidateQueries();
   }, [usuario, clienteConsultas]);
 
   // Se a sessão expirar durante o uso (renovação falhou), esquece o usuário
