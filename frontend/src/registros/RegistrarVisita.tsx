@@ -68,6 +68,8 @@ export function RegistrarVisita({ restaurante, aberto, aoMudarAberto }: Props) {
       void clienteConsultas.invalidateQueries({ queryKey: ["diario"] });
       void clienteConsultas.invalidateQueries({ queryKey: ["criticas"] });
       void clienteConsultas.invalidateQueries({ queryKey: ["perfil"] });
+      // O registro tira o restaurante dos desejos (no backend)
+      void clienteConsultas.invalidateQueries({ queryKey: ["desejos"] });
       fechar();
     },
     onError: (erro) => {
