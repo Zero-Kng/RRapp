@@ -91,8 +91,9 @@ Frontend (na pasta `frontend`):
 O teste percorre cadastro, busca, registro de visita e diário num navegador de verdade, contra o backend local. Antes de rodar, deixe no ar:
 
 - o banco no Docker (`docker compose up -d db`);
-- o `runserver` do Django, com os restaurantes do Rio importados (`manage.py importar_restaurantes`);
-- uma vez só, o navegador do Playwright: `npx playwright install chromium`.
+- o `runserver` do Django, com os restaurantes do Rio importados (`manage.py importar_restaurantes`).
+
+O teste usa o Microsoft Edge que já vem no Windows, então não precisa baixar navegador.
 
 Depois, na pasta `frontend`:
 

@@ -57,13 +57,22 @@ test("campos vazios são avisados sem chamar a API", async () => {
   expect(screen.getByText("Informe sua senha.")).toBeVisible();
 });
 
-test.each(["//site.com", "https://site.com", "configuracoes", null])(
-  "destino inseguro %s vira a página inicial",
-  (valor) => {
-    expect(destinoSeguro(valor)).toBe("/");
-  },
-);
+test.each([
+  "//site.com",
+  "https://site.com",
+  "configuracoes",
+  null,
+  "/\\site.com",
+  "/\\/site.com",
+  "\\\\site.com",
+  "/\tsite.com",
+  "/\t/site.com",
+  "/\n/site.com",
+])("destino inseguro %s vira a página inicial", (valor) => {
+  expect(destinoSeguro(valor)).toBe("/");
+});
 
-test("destino interno é mantido", () => {
+test("destino interno é mantido, com busca e âncora", () => {
   expect(destinoSeguro("/u/ana")).toBe("/u/ana");
+  expect(destinoSeguro("/buscar?q=adega#topo")).toBe("/buscar?q=adega#topo");
 });

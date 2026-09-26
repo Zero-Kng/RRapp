@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { LogOut } from "lucide-react";
 import { Dialog } from "radix-ui";
 import { useEffect, useId, useState, type ChangeEvent, type ReactNode } from "react";
 import { useForm, useWatch } from "react-hook-form";
@@ -154,7 +155,7 @@ function SecaoPerfil({ usuario }: { usuario: Eu }) {
 
       <div className="flex items-center gap-4">
         <Avatar usuario={{ ...usuario, avatar: fotoAtual }} tamanho={64} />
-        <div className="flex flex-col gap-1.5">
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
           <label htmlFor="avatar" className="text-sm font-medium">
             Foto de perfil
           </label>
@@ -165,7 +166,7 @@ function SecaoPerfil({ usuario }: { usuario: Eu }) {
             onChange={aoEscolherArquivo}
             aria-invalid={erroAvatar ? true : undefined}
             aria-describedby="avatar-ajuda"
-            className="text-sm file:mr-3 file:rounded-lg file:border file:border-borda file:bg-superficie file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-texto hover:file:bg-fundo"
+            className="w-full min-w-0 text-sm file:mr-3 file:rounded-lg file:border file:border-borda file:bg-superficie file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-texto hover:file:bg-fundo"
           />
           <p
             id="avatar-ajuda"
@@ -372,6 +373,26 @@ function SecaoExcluir() {
   );
 }
 
+// No celular o topo esconde o botão "Sair"; este é o caminho até ele
+function SecaoSair() {
+  const { sair } = useSessao();
+  const navegar = useNavigate();
+  const [saindo, setSaindo] = useState(false);
+
+  async function aoSair() {
+    setSaindo(true);
+    await sair();
+    navegar("/");
+  }
+
+  return (
+    <Botao variante="secundaria" disabled={saindo} onClick={() => void aoSair()}>
+      <LogOut aria-hidden="true" className="size-4" />
+      {saindo ? "Saindo…" : "Sair da conta"}
+    </Botao>
+  );
+}
+
 export function Configuracoes() {
   useTitulo("Configurações");
   const { usuario } = useSessao();
@@ -388,6 +409,9 @@ export function Configuracoes() {
       </Secao>
       <Secao titulo="Senha" descricao="Trocar a senha encerra suas outras sessões.">
         <SecaoSenha />
+      </Secao>
+      <Secao titulo="Sessão" descricao="Encerra a sessão neste aparelho.">
+        <SecaoSair />
       </Secao>
       <Secao titulo="Excluir conta" descricao="Apaga sua conta e todos os seus dados.">
         <SecaoExcluir />

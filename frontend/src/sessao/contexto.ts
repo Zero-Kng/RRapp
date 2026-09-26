@@ -11,6 +11,8 @@ export type DadosCadastro = {
 export type ContextoSessao = {
   usuario: Eu | null;
   carregando: boolean;
+  /** A pessoa saiu (ou excluiu a conta) por vontade própria, não por sessão expirada. */
+  saiu: boolean;
   entrar: (login: string, senha: string) => Promise<void>;
   cadastrar: (dados: DadosCadastro) => Promise<void>;
   sair: (opcoes?: { chamarApi?: boolean }) => Promise<void>;
