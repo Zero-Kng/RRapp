@@ -40,6 +40,18 @@ function abrir() {
   return renderizar(<Pagina />, { usuario: eu });
 }
 
+test("salvar a visita manda recarregar os desejos", async () => {
+  aceitarRegistro();
+  const { evento, clienteConsultas } = abrir();
+  const chave = ["desejos", "ana", "recentes", 1];
+  clienteConsultas.setQueryData(chave, pagina([]));
+
+  await evento.click(screen.getByRole("button", { name: "Salvar" }));
+
+  expect(await screen.findByText("fechado")).toBeInTheDocument();
+  expect(clienteConsultas.getQueryState(chave)?.isInvalidated).toBe(true);
+});
+
 test("salva data, nota, crítica e curtida", async () => {
   aceitarRegistro();
   const { evento } = abrir();
