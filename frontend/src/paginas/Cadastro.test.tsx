@@ -2,7 +2,7 @@ import { screen } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { afterEach, expect, test } from "vitest";
 import { definirAcesso } from "../api/sessao";
-import { eu } from "../testes/dados";
+import { eu, pagina } from "../testes/dados";
 import { renderizar } from "../testes/renderizar";
 import { servidor } from "../testes/servidor";
 
@@ -27,12 +27,13 @@ test("cria a conta e entra", async () => {
       corpo = await request.json();
       return HttpResponse.json({ usuario: eu, acesso: "t" }, { status: 201 });
     }),
+    http.get("*/api/v1/usuarios/ana/diario", () => HttpResponse.json(pagina([]))),
   );
   const { evento } = renderizar(undefined, { rota: "/cadastro" });
 
   await preencher(evento);
 
-  expect(await screen.findByRole("heading", { name: "Início" })).toBeVisible();
+  expect(await screen.findByRole("heading", { name: "Onde você comeu hoje?" })).toBeVisible();
   expect(corpo).toEqual({
     username: "ana",
     email: "ana@example.com",
