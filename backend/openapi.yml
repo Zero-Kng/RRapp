@@ -865,6 +865,7 @@ components:
           allOf:
           - $ref: '#/components/schemas/Cidade'
           readOnly: true
+          nullable: true
         membro_desde:
           type: string
           format: date-time
@@ -1051,6 +1052,7 @@ components:
           allOf:
           - $ref: '#/components/schemas/Cidade'
           readOnly: true
+          nullable: true
         membro_desde:
           type: string
           format: date-time
