@@ -83,3 +83,21 @@ test("usuário inexistente mostra página não encontrada", async () => {
 
   expect(await screen.findByRole("heading", { name: "Página não encontrada" })).toBeVisible();
 });
+
+test("no próprio perfil há link para as configurações; no de outra pessoa, não", async () => {
+  responder();
+  const { unmount } = renderizar(undefined, { rota: "/u/ana", usuario: eu });
+
+  const principal = await screen.findByRole("main");
+  expect(
+    await within(principal).findByRole("link", { name: "Editar perfil e configurações" }),
+  ).toHaveAttribute("href", "/configuracoes");
+  unmount();
+
+  responder();
+  renderizar(undefined, { rota: "/u/ana" });
+  await screen.findByRole("heading", { name: "Ana", level: 1 });
+  expect(
+    screen.queryByRole("link", { name: "Editar perfil e configurações" }),
+  ).not.toBeInTheDocument();
+});

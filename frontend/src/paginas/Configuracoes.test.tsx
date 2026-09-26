@@ -158,7 +158,9 @@ test("excluir conta pede a senha e desloga", async () => {
   await evento.type(within(dialogo).getByLabelText("Sua senha"), "senha-forte-123");
   await evento.click(within(dialogo).getByRole("button", { name: "Excluir definitivamente" }));
 
-  expect(await screen.findByRole("link", { name: "Criar conta" })).toBeVisible();
+  expect(
+    await screen.findByRole("heading", { name: "Onde você comeu hoje?", level: 1 }),
+  ).toBeVisible();
   expect(corpo).toEqual({ senha: "senha-forte-123" });
 });
 
@@ -166,4 +168,16 @@ test("o seletor de tema aparece na página", async () => {
   abrir();
 
   expect(await screen.findByRole("group", { name: "Tema" })).toBeVisible();
+});
+
+test("a página tem o botão de sair (no celular o topo não mostra)", async () => {
+  servidor.use(http.post("*/api/v1/auth/logout", () => new HttpResponse(null, { status: 204 })));
+  const { evento } = abrir();
+
+  const principal = await screen.findByRole("main");
+  await evento.click(await within(principal).findByRole("button", { name: "Sair da conta" }));
+
+  expect(
+    await screen.findByRole("heading", { name: "Onde você comeu hoje?", level: 1 }),
+  ).toBeVisible();
 });
