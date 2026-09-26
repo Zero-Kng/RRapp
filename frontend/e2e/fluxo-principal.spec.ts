@@ -26,7 +26,7 @@ test("cadastro, busca, registro de visita e diário", async ({ page }) => {
   await nota.focus();
   for (let i = 0; i < 7; i++) await nota.press("ArrowRight");
   await expect(nota).toHaveAttribute("aria-valuetext", "3,5 de 5 estrelas");
-  await page.getByLabel("Crítica").fill("Teste automatizado.");
+  await page.getByRole("textbox", { name: "Crítica" }).fill("Teste automatizado.");
   await page.getByRole("button", { name: "Salvar" }).click();
   await expect(page.getByRole("dialog")).toBeHidden();
 

@@ -13,5 +13,6 @@ export default defineConfig({
     url: "http://localhost:5173",
     reuseExistingServer: true,
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  // Usa o Edge que já vem no Windows: dispensa baixar o Chromium do Playwright (~150 MB)
+  projects: [{ name: "edge", use: { ...devices["Desktop Edge"], channel: "msedge" } }],
 });
