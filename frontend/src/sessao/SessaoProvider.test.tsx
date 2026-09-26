@@ -107,3 +107,28 @@ test("recuperar a sessão recarrega as consultas sem tirar os dados da tela", as
   await waitFor(() => expect(clienteConsultas.getQueryState(chave)?.isInvalidated).toBe(true));
   expect(clienteConsultas.getQueryData(chave)).toEqual({ username: "ana" });
 });
+
+test("quando a sessão de alguém expira, os dados dessa pessoa saem do cache", async () => {
+  servidor.use(
+    http.post("*/api/v1/auth/token/renovar", () => HttpResponse.json({ acesso: "t" })),
+    http.get("*/api/v1/auth/eu", () => HttpResponse.json(eu)),
+  );
+  const clienteConsultas = new QueryClient();
+  render(
+    <QueryClientProvider client={clienteConsultas}>
+      <SessaoProvider>
+        <Sonda />
+      </SessaoProvider>
+    </QueryClientProvider>,
+  );
+  await screen.findByText("ana");
+  // Dado que depende de quem vê (ex.: o ♡ e "Sua última visita" de ana)
+  const chave = ["restaurante", "aprazivel-santa-teresa"];
+  clienteConsultas.setQueryData(chave, { na_minha_lista_de_desejos: true });
+
+  act(() => definirAcesso(null));
+
+  expect(await screen.findByText("anônimo")).toBeInTheDocument();
+  // Se ficasse só "velho", quem entrasse depois na mesma aba veria por um instante os dados de ana
+  await waitFor(() => expect(clienteConsultas.getQueryData(chave)).toBeUndefined());
+});
