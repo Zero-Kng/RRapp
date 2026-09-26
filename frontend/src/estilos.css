@@ -63,3 +63,17 @@
 body {
   @apply bg-fundo font-sans text-texto antialiased;
 }
+
+::selection {
+  background-color: color-mix(in srgb, var(--cor-destaque) 28%, transparent);
+}
+
+html {
+  caret-color: var(--cor-destaque);
+  accent-color: var(--cor-destaque);
+  scrollbar-color: var(--cor-borda) transparent;
+}
+
+a {
+  text-underline-offset: 3px;
+}
