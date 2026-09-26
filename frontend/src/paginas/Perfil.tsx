@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { MapPin } from "lucide-react";
+import { MapPin, Settings } from "lucide-react";
 import { Tabs } from "radix-ui";
 import { useState } from "react";
-import { useParams } from "react-router";
+import { Link, useParams } from "react-router";
 import { api } from "../api/cliente";
 import { codigoDeErro, dados, mensagemDeErro } from "../api/erros";
 import type { Registro } from "../api/tipos";
@@ -166,6 +166,17 @@ export function Perfil() {
             </span>
           </p>
         </div>
+        {/* No celular o topo esconde "Configurações"; este é o caminho até lá */}
+        {ehVoce && (
+          <Link
+            to="/configuracoes"
+            aria-label="Editar perfil e configurações"
+            className={`inline-flex min-h-10 items-center gap-2 self-start rounded-lg border border-borda bg-superficie px-4 text-sm font-semibold hover:bg-fundo sm:ml-auto sm:self-center ${classeFoco}`}
+          >
+            <Settings aria-hidden="true" className="size-4" />
+            Editar perfil
+          </Link>
+        )}
       </header>
 
       <Tabs.Root defaultValue="diario" className="mt-10">

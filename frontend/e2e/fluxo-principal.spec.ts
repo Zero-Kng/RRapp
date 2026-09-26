@@ -1,3 +1,5 @@
+/// <reference lib="dom" />
+// O page.evaluate roda no navegador, por isso os tipos do DOM
 import { expect, test } from "@playwright/test";
 
 test("cadastro, busca, registro de visita e diário", async ({ page }) => {
@@ -26,7 +28,7 @@ test("cadastro, busca, registro de visita e diário", async ({ page }) => {
   await nota.focus();
   for (let i = 0; i < 7; i++) await nota.press("ArrowRight");
   await expect(nota).toHaveAttribute("aria-valuetext", "3,5 de 5 estrelas");
-  await page.getByLabel("Crítica").fill("Teste automatizado.");
+  await page.getByRole("textbox", { name: "Crítica" }).fill("Teste automatizado.");
   await page.getByRole("button", { name: "Salvar" }).click();
   await expect(page.getByRole("dialog")).toBeHidden();
 
@@ -34,8 +36,17 @@ test("cadastro, busca, registro de visita e diário", async ({ page }) => {
   await page.goto(`/u/${username}`);
   await expect(page.getByRole("link", { name: "Aprazível" })).toBeVisible();
 
-  // 5. Limpeza: exclui a conta criada
+  // 5. Configurações no celular: nada pode alargar a página além da tela
+  await page.setViewportSize({ width: 375, height: 812 });
   await page.goto("/configuracoes");
+  await expect(page.getByRole("button", { name: "Sair da conta" })).toBeVisible();
+  const larguras = await page.evaluate(() => ({
+    pagina: document.documentElement.scrollWidth,
+    tela: document.documentElement.clientWidth,
+  }));
+  expect(larguras.pagina).toBeLessThanOrEqual(larguras.tela);
+
+  // 6. Limpeza: exclui a conta criada
   await page.getByRole("button", { name: "Excluir conta" }).click();
   const dialogo = page.getByRole("dialog");
   await dialogo.getByLabel("Sua senha").fill(senha);
