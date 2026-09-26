@@ -2,6 +2,7 @@ import datetime
 
 import factory
 
+from colecoes.models import Desejo
 from contas.models import Usuario
 from lugares.models import Categoria, Cidade, Restaurante
 from registros.models import Registro
@@ -53,3 +54,11 @@ class RegistroFactory(factory.django.DjangoModelFactory):
     restaurante = factory.SubFactory(RestauranteFactory)
     data_visita = datetime.date(2026, 9, 1)
     nota = 8
+
+
+class DesejoFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Desejo
+
+    usuario = factory.SubFactory(UsuarioFactory)
+    restaurante = factory.SubFactory(RestauranteFactory)
