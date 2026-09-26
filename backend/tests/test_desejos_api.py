@@ -1,6 +1,7 @@
 import pytest
 
 from colecoes.models import Desejo
+from config.api import ThrottleEscrita
 from factories import DesejoFactory, RegistroFactory, RestauranteFactory
 from lugares.models import Restaurante
 
@@ -107,3 +108,14 @@ def test_desejos_de_usuario_suspenso_ou_inexistente(api, usuario):
 
     assert api.get("/api/v1/usuarios/ana/desejos").status_code == 404
     assert api.get("/api/v1/usuarios/ninguem/desejos").status_code == 404
+
+
+@pytest.mark.django_db
+def test_escrita_de_desejo_e_limitada_mas_leitura_nao(api_logado, usuario, monkeypatch):
+    monkeypatch.setattr(ThrottleEscrita, "THROTTLE_RATES", {"escrita": "2/min"})
+    restaurante = RestauranteFactory()
+
+    codigos = [api_logado.put(URL.format(restaurante.slug)).status_code for _ in range(3)]
+
+    assert codigos == [204, 204, 429]
+    assert api_logado.get("/api/v1/usuarios/ana/desejos").status_code == 200
