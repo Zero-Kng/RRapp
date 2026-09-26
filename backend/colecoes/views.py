@@ -25,6 +25,7 @@ class DesejoView(APIView):
 
     permission_classes = [IsAuthenticated]
     throttle_classes = [ThrottleEscrita]
+    throttle_scope = "escrita"
 
     @extend_schema(request=None, responses={204: None})
     def put(self, request, slug: str) -> Response:
