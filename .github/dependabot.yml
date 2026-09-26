@@ -8,6 +8,17 @@ updates:
     directory: /frontend
     schedule:
       interval: weekly
+    # Versões principais que ainda não servem; as menores continuam chegando
+    ignore:
+      # O openapi-typescript (gerar-tipos) usa a API JS do compilador, que o TypeScript 7 não tem
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
+      # Os tipos acompanham o Node do projeto e do CI (24)
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      # O Vitest 5 não lê Blob/File do jsdom 30 (quebra os testes de upload do avatar)
+      - dependency-name: jsdom
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
