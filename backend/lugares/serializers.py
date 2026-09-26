@@ -82,6 +82,7 @@ class RestauranteDetalheSerializer(RestauranteResumoSerializer):
     link_mapa = serializers.SerializerMethodField()
     histograma = serializers.SerializerMethodField()
     meu_ultimo_registro = serializers.SerializerMethodField()
+    na_minha_lista_de_desejos = serializers.SerializerMethodField()
 
     class Meta(RestauranteResumoSerializer.Meta):
         fields = [
@@ -92,6 +93,7 @@ class RestauranteDetalheSerializer(RestauranteResumoSerializer):
             "link_mapa",
             "histograma",
             "meu_ultimo_registro",
+            "na_minha_lista_de_desejos",
         ]
 
     def get_link_mapa(self, restaurante: Restaurante) -> str:
@@ -117,3 +119,9 @@ class RestauranteDetalheSerializer(RestauranteResumoSerializer):
             .first()
         )
         return MeuRegistroSerializer(registro).data if registro else None
+
+    def get_na_minha_lista_de_desejos(self, restaurante: Restaurante) -> bool:
+        request = self.context.get("request")
+        if request is None or not request.user.is_authenticated:
+            return False
+        return restaurante.desejos.filter(usuario=request.user).exists()

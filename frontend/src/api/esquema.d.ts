@@ -165,6 +165,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/eu/desejos/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** @description Guarda ou tira um restaurante dos desejos; repetir a mesma ação não dá erro. */
+        put: operations["eu_desejos_update"];
+        post?: never;
+        /** @description Guarda ou tira um restaurante dos desejos; repetir a mesma ação não dá erro. */
+        delete: operations["eu_desejos_destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/eu/excluir": {
         parameters: {
             query?: never;
@@ -326,6 +344,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/usuarios/{username}/desejos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["usuarios_desejos_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/usuarios/{username}/diario": {
         parameters: {
             query?: never;
@@ -385,6 +419,11 @@ export interface components {
         ConfirmarSenhaRequest: {
             senha: string;
         };
+        Desejo: {
+            readonly restaurante: components["schemas"]["RestauranteResumo"];
+            /** Format: date-time */
+            readonly adicionado_em: string;
+        };
         EsqueciSenhaRequest: {
             /** Format: email */
             email: string;
@@ -429,6 +468,21 @@ export interface components {
         Numeros: {
             visitados: number;
             visitados_este_ano: number;
+        };
+        PaginatedDesejoList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous: string | null;
+            results: components["schemas"]["Desejo"][];
         };
         PaginatedRegistroList: {
             /** @example 123 */
@@ -557,6 +611,7 @@ export interface components {
             readonly link_mapa: string;
             readonly histograma: components["schemas"]["BarraHistograma"][];
             readonly meu_ultimo_registro: components["schemas"]["MeuRegistro"] | null;
+            readonly na_minha_lista_de_desejos: boolean;
         };
         RestauranteResumo: {
             slug: string;
@@ -925,6 +980,64 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["Cidade"][];
                 };
+            };
+            /** @description Erro */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Erro"];
+                };
+            };
+        };
+    };
+    eu_desejos_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Erro */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Erro"];
+                };
+            };
+        };
+    };
+    eu_desejos_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Erro */
             default: {
@@ -1320,6 +1433,44 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PaginatedRegistroList"];
+                };
+            };
+            /** @description Erro */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Erro"];
+                };
+            };
+        };
+    };
+    usuarios_desejos_list: {
+        parameters: {
+            query?: {
+                /**
+                 * @description * `recentes` - recentes
+                 *     * `bairro` - bairro
+                 */
+                ordem?: "recentes" | "bairro";
+                /** @description Um número de página dentro do conjunto de resultados paginado. */
+                page?: number;
+            };
+            header?: never;
+            path: {
+                username: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedDesejoList"];
                 };
             };
             /** @description Erro */

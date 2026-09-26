@@ -79,6 +79,10 @@ Evoluir para um produto lançado e escalável, com **app mobile** convivendo com
 | D19 | Tipografia **Plus Jakarta Sans** | Inter, DM Sans, Manrope + Lora | Moderna e amigável |
 | D20 | Início da Fase 1: **busca + suas últimas visitas** | Mais bem avaliados; só busca | Funciona com a API existente e não fica vazio |
 | D21 | Dev com **proxy do Vite** (mesma origem); tipos via **openapi-typescript/openapi-fetch**; **Radix UI** | CORS entre portas; tipos à mão | Cookies/CSRF iguais à produção; tipos sempre em dia; acessibilidade pronta |
+| D22 | Fase 2 entregue em **fatias por funcionalidade** (Desejos → Favoritos → Listas), cada uma com backend, frontend e PR próprios | Backend e depois frontend (como a Fase 1); tudo num PR | Cada fatia já é utilizável; PRs pequenos e revisáveis |
+| D23 | Navegação inferior com **Início, Buscar, Listas, Perfil** | 5 itens com "+ Registrar"; manter 3 | Listas a um toque; registrar já é fácil pela página do restaurante |
+| D24 | Reordenar listas **arrastando (dnd-kit), com setas ↑↓ de reserva** | Só setas; campo de posição | Natural no celular, sem excluir quem não consegue arrastar |
+| D25 | **Slug da lista fixo** após a criação; restaurantes identificados por **slug** na API da Fase 2 | Slug que acompanha o título; ids | Links compartilhados não quebram; mesmo padrão do registro de visita |
 
 ## 4. Arquitetura
 
@@ -180,6 +184,15 @@ Evoluir para um produto lançado e escalável, com **app mobile** convivendo com
 - Moderno e limpo; claro e escuro; azul (`#1D64D8` / `#6AA4FF`) com estrelas douradas (`#B97803` / `#F5B83D`); Plus Jakarta Sans.
 - Telas da Fase 1: Início, Buscar, Restaurante, Registrar visita, Perfil (Diário/Críticas), Configurações, autenticação e recuperação de senha.
 - Proxy do Vite em dev, tipos gerados do OpenAPI, token de acesso só em memória com renovação automática, Radix UI, Vitest + MSW + Playwright.
+
+## 10.2 Fase 2: desejos, favoritos e listas
+
+> Detalhes: [10-fase2-colecoes.md](../../design/10-fase2-colecoes.md)
+
+- App Django `colecoes` com Desejo, Favorito, Lista e ItemLista; registrar uma visita tira o restaurante dos desejos.
+- Botões ♡ Desejo e + Lista na página do restaurante; favoritos no perfil e em Configurações; abas Listas e Desejos no perfil; páginas `/listas`, `/listas/nova`, `/l/:slug` e `/l/:slug/editar`.
+- Lista privada responde 404 a terceiros; limites de 100 itens por lista e 100 listas por usuário.
+- Curtir e comentar listas e "Listas populares" ficam para as Fases 3 e 4.
 
 ## 11. Autenticação e erros
 
