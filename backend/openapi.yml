@@ -1,0 +1,1418 @@
+openapi: 3.0.3
+info:
+  title: rrapp API
+  version: 1.0.0
+  description: 'API do rrapp: rede social de reviews de restaurantes.'
+paths:
+  /api/v1/auth/cadastro:
+    post:
+      operationId: auth_cadastro_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CadastroRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CadastroRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sessao'
+          description: ''
+        default:
+          description: Erro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+  /api/v1/auth/eu:
+    get:
+      operationId: auth_eu_retrieve
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Eu'
+          description: ''
+        default:
+          description: Erro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+  /api/v1/auth/login:
+    post:
+      operationId: auth_login_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sessao'
+          description: ''
+        default:
+          description: Erro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+  /api/v1/auth/logout:
+    post:
+      operationId: auth_logout_create
+      description: 'Sem CSRF de propósito: o pior que um site malicioso consegue é
+        deslogar alguém.'
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RenovacaoRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RenovacaoRequest'
+      security:
+      - {}
+      responses:
+        '204':
+          description: No response body
+        default:
+          description: Erro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+  /api/v1/auth/senha/esqueci:
+    post:
+      operationId: auth_senha_esqueci_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EsqueciSenhaRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EsqueciSenhaRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mensagem'
+          description: ''
+        default:
+          description: Erro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+  /api/v1/auth/senha/redefinir:
+    post:
+      operationId: auth_senha_redefinir_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RedefinirSenhaRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RedefinirSenhaRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '204':
+          description: No response body
+        default:
+          description: Erro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+  /api/v1/auth/token/renovar:
+    post:
+      operationId: auth_token_renovar_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RenovacaoRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RenovacaoRequest'
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Acesso'
+          description: ''
+        default:
+          description: Erro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+  /api/v1/bairros:
+    get:
+      operationId: bairros_list
+      parameters:
+      - in: query
+        name: cidade
+        schema:
+          type: string
+        required: true
+      tags:
+      - bairros
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+          description: ''
+        default:
+          description: Erro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+  /api/v1/categorias:
+    get:
+      operationId: categorias_list
+      tags:
+      - categorias
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Categoria'
+          description: ''
+        default:
+          description: Erro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+  /api/v1/cidades:
+    get:
+      operationId: cidades_list
+      tags:
+      - cidades
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Cidade'
+          description: ''
+        default:
+          description: Erro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+  /api/v1/eu/excluir:
+    post:
+      operationId: eu_excluir_create
+      description: POST (e não DELETE) para que o corpo com a senha apareça no OpenAPI.
+      tags:
+      - eu
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfirmarSenhaRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ConfirmarSenhaRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+        default:
+          description: Erro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+  /api/v1/eu/perfil:
+    patch:
+      operationId: eu_perfil_partial_update
+      tags:
+      - eu
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAtualizarPerfilRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAtualizarPerfilRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Eu'
+          description: ''
+        default:
+          description: Erro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+  /api/v1/eu/senha:
+    post:
+      operationId: eu_senha_create
+      tags:
+      - eu
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrocarSenhaRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TrocarSenhaRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Acesso'
+          description: ''
+        default:
+          description: Erro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+  /api/v1/registros:
+    post:
+      operationId: registros_create
+      tags:
+      - registros
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistroRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegistroRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Registro'
+          description: ''
+        default:
+          description: Erro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+  /api/v1/registros/{id}:
+    get:
+      operationId: registros_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - registros
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Registro'
+          description: ''
+        default:
+          description: Erro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+    patch:
+      operationId: registros_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - registros
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRegistroRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedRegistroRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Registro'
+          description: ''
+        default:
+          description: Erro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+    delete:
+      operationId: registros_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - registros
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+        default:
+          description: Erro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+  /api/v1/restaurantes:
+    get:
+      operationId: restaurantes_list
+      parameters:
+      - in: query
+        name: bairro
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 100
+      - in: query
+        name: categoria
+        schema:
+          type: string
+          minLength: 1
+          pattern: ^[-a-zA-Z0-9_]+$
+      - in: query
+        name: cidade
+        schema:
+          type: string
+          minLength: 1
+          pattern: ^[-a-zA-Z0-9_]+$
+      - in: query
+        name: nota_min
+        schema:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,1}(?:\.\d{0,1})?$
+      - in: query
+        name: ordem
+        schema:
+          enum:
+          - relevancia
+          - nome
+          - nota
+          - populares
+          - recentes
+          type: string
+          minLength: 1
+        description: |-
+          * `relevancia` - relevancia
+          * `nome` - nome
+          * `nota` - nota
+          * `populares` - populares
+          * `recentes` - recentes
+      - name: page
+        required: false
+        in: query
+        description: Um número de página dentro do conjunto de resultados paginado.
+        schema:
+          type: integer
+      - in: query
+        name: preco
+        schema:
+          type: integer
+          maximum: 4
+          minimum: 1
+      - in: query
+        name: q
+        schema:
+          type: string
+          maxLength: 100
+      tags:
+      - restaurantes
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRestauranteResumoList'
+          description: ''
+        default:
+          description: Erro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+  /api/v1/restaurantes/{slug}:
+    get:
+      operationId: restaurantes_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - restaurantes
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestauranteDetalhe'
+          description: ''
+        default:
+          description: Erro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+  /api/v1/restaurantes/{slug}/registros:
+    get:
+      operationId: restaurantes_registros_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Um número de página dentro do conjunto de resultados paginado.
+        schema:
+          type: integer
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - restaurantes
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRegistroList'
+          description: ''
+        default:
+          description: Erro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+  /api/v1/usuarios/{username}:
+    get:
+      operationId: usuarios_retrieve
+      parameters:
+      - in: path
+        name: username
+        schema:
+          type: string
+        required: true
+      tags:
+      - usuarios
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerfilPublico'
+          description: ''
+        default:
+          description: Erro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+  /api/v1/usuarios/{username}/criticas:
+    get:
+      operationId: usuarios_criticas_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Um número de página dentro do conjunto de resultados paginado.
+        schema:
+          type: integer
+      - in: path
+        name: username
+        schema:
+          type: string
+        required: true
+      tags:
+      - usuarios
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRegistroList'
+          description: ''
+        default:
+          description: Erro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+  /api/v1/usuarios/{username}/diario:
+    get:
+      operationId: usuarios_diario_list
+      parameters:
+      - in: query
+        name: ano
+        schema:
+          type: integer
+          maximum: 2100
+          minimum: 1900
+      - in: query
+        name: mes
+        schema:
+          type: integer
+          maximum: 12
+          minimum: 1
+      - name: page
+        required: false
+        in: query
+        description: Um número de página dentro do conjunto de resultados paginado.
+        schema:
+          type: integer
+      - in: path
+        name: username
+        schema:
+          type: string
+        required: true
+      tags:
+      - usuarios
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRegistroList'
+          description: ''
+        default:
+          description: Erro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+components:
+  schemas:
+    Acesso:
+      type: object
+      properties:
+        acesso:
+          type: string
+        renovacao:
+          type: string
+      required:
+      - acesso
+    BarraHistograma:
+      type: object
+      properties:
+        nota:
+          type: number
+          format: double
+        quantidade:
+          type: integer
+      required:
+      - nota
+      - quantidade
+    CadastroRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+          maxLength: 30
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        senha:
+          type: string
+          writeOnly: true
+          minLength: 1
+          maxLength: 128
+        aceite_termos:
+          type: boolean
+      required:
+      - aceite_termos
+      - email
+      - senha
+      - username
+    Categoria:
+      type: object
+      properties:
+        slug:
+          type: string
+          maxLength: 140
+          pattern: ^[-a-zA-Z0-9_]+$
+        nome:
+          type: string
+          maxLength: 120
+      required:
+      - nome
+      - slug
+    CategoriaRequest:
+      type: object
+      properties:
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 140
+          pattern: ^[-a-zA-Z0-9_]+$
+        nome:
+          type: string
+          minLength: 1
+          maxLength: 120
+      required:
+      - nome
+      - slug
+    Cidade:
+      type: object
+      properties:
+        slug:
+          type: string
+          maxLength: 120
+          pattern: ^[-a-zA-Z0-9_]+$
+        nome:
+          type: string
+          maxLength: 100
+        estado:
+          type: string
+          title: Estado (UF)
+          maxLength: 2
+      required:
+      - estado
+      - nome
+      - slug
+    CidadeRequest:
+      type: object
+      properties:
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 120
+          pattern: ^[-a-zA-Z0-9_]+$
+        nome:
+          type: string
+          minLength: 1
+          maxLength: 100
+        estado:
+          type: string
+          minLength: 1
+          title: Estado (UF)
+          maxLength: 2
+      required:
+      - estado
+      - nome
+      - slug
+    ConfirmarSenhaRequest:
+      type: object
+      properties:
+        senha:
+          type: string
+          minLength: 1
+          maxLength: 128
+      required:
+      - senha
+    EsqueciSenhaRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+      required:
+      - email
+    Eu:
+      type: object
+      properties:
+        username:
+          type: string
+          readOnly: true
+          title: Usuário
+          description: Obrigatório. 150 caracteres ou menos. Letras, números e @/./+/-/_
+            apenas.
+        email:
+          type: string
+          format: email
+          readOnly: true
+          title: E-mail
+        nome_exibicao:
+          type: string
+          readOnly: true
+          title: Nome de exibição
+        bio:
+          type: string
+          readOnly: true
+        avatar:
+          type: string
+          format: uri
+          nullable: true
+          readOnly: true
+        cidade:
+          allOf:
+          - $ref: '#/components/schemas/Cidade'
+          readOnly: true
+          nullable: true
+        membro_desde:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - avatar
+      - bio
+      - cidade
+      - email
+      - membro_desde
+      - nome_exibicao
+      - username
+    LoginRequest:
+      type: object
+      properties:
+        login:
+          type: string
+          minLength: 1
+          maxLength: 254
+        senha:
+          type: string
+          minLength: 1
+          maxLength: 128
+      required:
+      - login
+      - senha
+    Mensagem:
+      type: object
+      properties:
+        mensagem:
+          type: string
+      required:
+      - mensagem
+    MeuRegistro:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        data_visita:
+          type: string
+          format: date
+          title: Data da visita
+        nota:
+          type: number
+          minimum: 0
+          maximum: 5
+          multipleOf: 0.5
+          nullable: true
+        curtiu:
+          type: boolean
+      required:
+      - curtiu
+      - data_visita
+      - id
+      - nota
+    Numeros:
+      type: object
+      properties:
+        visitados:
+          type: integer
+        visitados_este_ano:
+          type: integer
+      required:
+      - visitados
+      - visitados_este_ano
+    PaginatedRegistroList:
+      type: object
+      required:
+      - count
+      - next
+      - previous
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Registro'
+    PaginatedRestauranteResumoList:
+      type: object
+      required:
+      - count
+      - next
+      - previous
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/RestauranteResumo'
+    PatchedAtualizarPerfilRequest:
+      type: object
+      properties:
+        nome_exibicao:
+          type: string
+          title: Nome de exibição
+          maxLength: 50
+        bio:
+          type: string
+          maxLength: 300
+        cidade:
+          type: string
+          minLength: 1
+          nullable: true
+        avatar:
+          type: string
+          format: binary
+          writeOnly: true
+        remover_avatar:
+          type: boolean
+          writeOnly: true
+    PatchedRegistroRequest:
+      type: object
+      properties:
+        restaurante_slug:
+          type: string
+          minLength: 1
+          writeOnly: true
+        data_visita:
+          type: string
+          format: date
+          title: Data da visita
+        nota:
+          type: number
+          minimum: 0
+          maximum: 5
+          multipleOf: 0.5
+          nullable: true
+        critica:
+          type: string
+          maxLength: 5000
+        curtiu:
+          type: boolean
+        revisita:
+          type: boolean
+    PerfilPublico:
+      type: object
+      properties:
+        username:
+          type: string
+          readOnly: true
+          title: Usuário
+          description: Obrigatório. 150 caracteres ou menos. Letras, números e @/./+/-/_
+            apenas.
+        nome_exibicao:
+          type: string
+          readOnly: true
+          title: Nome de exibição
+        bio:
+          type: string
+          readOnly: true
+        avatar:
+          type: string
+          format: uri
+          nullable: true
+          readOnly: true
+        cidade:
+          allOf:
+          - $ref: '#/components/schemas/Cidade'
+          readOnly: true
+          nullable: true
+        membro_desde:
+          type: string
+          format: date-time
+          readOnly: true
+        numeros:
+          allOf:
+          - $ref: '#/components/schemas/Numeros'
+          readOnly: true
+      required:
+      - avatar
+      - bio
+      - cidade
+      - membro_desde
+      - nome_exibicao
+      - numeros
+      - username
+    RedefinirSenhaRequest:
+      type: object
+      properties:
+        uid:
+          type: string
+          minLength: 1
+          maxLength: 64
+        token:
+          type: string
+          minLength: 1
+          maxLength: 128
+        nova_senha:
+          type: string
+          minLength: 1
+          maxLength: 128
+      required:
+      - nova_senha
+      - token
+      - uid
+    Registro:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        restaurante:
+          allOf:
+          - $ref: '#/components/schemas/RestauranteResumo'
+          readOnly: true
+        usuario:
+          allOf:
+          - $ref: '#/components/schemas/UsuarioResumo'
+          readOnly: true
+        data_visita:
+          type: string
+          format: date
+          title: Data da visita
+        nota:
+          type: number
+          minimum: 0
+          maximum: 5
+          multipleOf: 0.5
+          nullable: true
+        critica:
+          type: string
+          maxLength: 5000
+        curtiu:
+          type: boolean
+        revisita:
+          type: boolean
+        criado_em:
+          type: string
+          format: date-time
+          readOnly: true
+        atualizado_em:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - atualizado_em
+      - criado_em
+      - critica
+      - curtiu
+      - data_visita
+      - id
+      - nota
+      - restaurante
+      - revisita
+      - usuario
+    RegistroRequest:
+      type: object
+      properties:
+        restaurante_slug:
+          type: string
+          minLength: 1
+          writeOnly: true
+        data_visita:
+          type: string
+          format: date
+          title: Data da visita
+        nota:
+          type: number
+          minimum: 0
+          maximum: 5
+          multipleOf: 0.5
+          nullable: true
+        critica:
+          type: string
+          maxLength: 5000
+        curtiu:
+          type: boolean
+        revisita:
+          type: boolean
+      required:
+      - restaurante_slug
+    RenovacaoRequest:
+      type: object
+      properties:
+        renovacao:
+          type: string
+          minLength: 1
+          description: Só para o app mobile.
+    RestauranteDetalhe:
+      type: object
+      properties:
+        slug:
+          type: string
+          maxLength: 220
+          pattern: ^[-a-zA-Z0-9_]+$
+        nome:
+          type: string
+          maxLength: 200
+        bairro:
+          type: string
+          maxLength: 100
+        cidade:
+          allOf:
+          - $ref: '#/components/schemas/Cidade'
+          readOnly: true
+        categorias:
+          type: array
+          items:
+            $ref: '#/components/schemas/Categoria'
+          readOnly: true
+        faixa_preco:
+          type: integer
+          maximum: 4
+          minimum: 1
+          nullable: true
+          title: Faixa de preço
+        nota_media:
+          type: number
+          format: double
+          nullable: true
+          readOnly: true
+        total_avaliacoes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        endereco:
+          type: string
+          title: Endereço
+          maxLength: 255
+        latitude:
+          type: number
+          format: double
+          readOnly: true
+          nullable: true
+        longitude:
+          type: number
+          format: double
+          readOnly: true
+          nullable: true
+        link_mapa:
+          type: string
+          readOnly: true
+        histograma:
+          type: array
+          items:
+            $ref: '#/components/schemas/BarraHistograma'
+          readOnly: true
+        meu_ultimo_registro:
+          allOf:
+          - $ref: '#/components/schemas/MeuRegistro'
+          nullable: true
+          readOnly: true
+      required:
+      - bairro
+      - categorias
+      - cidade
+      - endereco
+      - faixa_preco
+      - histograma
+      - latitude
+      - link_mapa
+      - longitude
+      - meu_ultimo_registro
+      - nome
+      - nota_media
+      - slug
+      - status
+      - total_avaliacoes
+    RestauranteResumo:
+      type: object
+      properties:
+        slug:
+          type: string
+          maxLength: 220
+          pattern: ^[-a-zA-Z0-9_]+$
+        nome:
+          type: string
+          maxLength: 200
+        bairro:
+          type: string
+          maxLength: 100
+        cidade:
+          allOf:
+          - $ref: '#/components/schemas/Cidade'
+          readOnly: true
+        categorias:
+          type: array
+          items:
+            $ref: '#/components/schemas/Categoria'
+          readOnly: true
+        faixa_preco:
+          type: integer
+          maximum: 4
+          minimum: 1
+          nullable: true
+          title: Faixa de preço
+        nota_media:
+          type: number
+          format: double
+          nullable: true
+          readOnly: true
+        total_avaliacoes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+      required:
+      - bairro
+      - categorias
+      - cidade
+      - faixa_preco
+      - nome
+      - nota_media
+      - slug
+      - status
+      - total_avaliacoes
+    RestauranteResumoRequest:
+      type: object
+      properties:
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 220
+          pattern: ^[-a-zA-Z0-9_]+$
+        nome:
+          type: string
+          minLength: 1
+          maxLength: 200
+        bairro:
+          type: string
+          maxLength: 100
+        faixa_preco:
+          type: integer
+          maximum: 4
+          minimum: 1
+          nullable: true
+          title: Faixa de preço
+        total_avaliacoes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+      required:
+      - nome
+      - slug
+    Sessao:
+      type: object
+      description: Só para documentar a resposta de cadastro/login no OpenAPI.
+      properties:
+        usuario:
+          $ref: '#/components/schemas/Eu'
+        acesso:
+          type: string
+        renovacao:
+          type: string
+          description: 'Só com `X-Cliente: mobile`.'
+      required:
+      - acesso
+      - usuario
+    StatusEnum:
+      enum:
+      - ativo
+      - pendente
+      - fechado
+      type: string
+      description: |-
+        * `ativo` - Ativo
+        * `pendente` - Pendente
+        * `fechado` - Fechado
+    TrocarSenhaRequest:
+      type: object
+      properties:
+        senha_atual:
+          type: string
+          minLength: 1
+          maxLength: 128
+        nova_senha:
+          type: string
+          minLength: 1
+          maxLength: 128
+      required:
+      - nova_senha
+      - senha_atual
+    UsuarioResumo:
+      type: object
+      properties:
+        username:
+          type: string
+          readOnly: true
+          title: Usuário
+          description: Obrigatório. 150 caracteres ou menos. Letras, números e @/./+/-/_
+            apenas.
+        nome_exibicao:
+          type: string
+          readOnly: true
+          title: Nome de exibição
+        avatar:
+          type: string
+          format: uri
+          nullable: true
+          readOnly: true
+      required:
+      - avatar
+      - nome_exibicao
+      - username
+    Erro:
+      type: object
+      required:
+      - erro
+      properties:
+        erro:
+          type: object
+          required:
+          - codigo
+          - mensagem
+          - campos
+          properties:
+            codigo:
+              type: string
+            mensagem:
+              type: string
+            campos:
+              type: object
+              additionalProperties: true
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

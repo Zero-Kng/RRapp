@@ -74,6 +74,11 @@ Evoluir para um produto lançado e escalável, com **app mobile** convivendo com
 | D14 | **2FA obrigatório só para staff** no MVP | 2FA opcional para todos | Protege o crítico sem atrasar o MVP |
 | D15 | **Monorepo** (`backend/`, `frontend/`, futuro `mobile/`) | Repositórios separados | Mudanças de API e tela no mesmo PR |
 | D16 | **Domínio próprio obrigatório** (`app.` e `api.` no mesmo domínio) | Domínios padrão dos serviços | Necessário para o cookie `SameSite=Strict` |
+| D17 | Visual **moderno e limpo**, temas **claro e escuro** seguindo o sistema | Diário escuro; carioca descontraído | Fácil de usar; o escuro atende quem prefere |
+| D18 | Destaque **azul** com **estrelas douradas** | Coral, verde, âmbar, vinho; tudo azul | Escolha do produto; a nota se destaca de botões e links |
+| D19 | Tipografia **Plus Jakarta Sans** | Inter, DM Sans, Manrope + Lora | Moderna e amigável |
+| D20 | Início da Fase 1: **busca + suas últimas visitas** | Mais bem avaliados; só busca | Funciona com a API existente e não fica vazio |
+| D21 | Dev com **proxy do Vite** (mesma origem); tipos via **openapi-typescript/openapi-fetch**; **Radix UI** | CORS entre portas; tipos à mão | Cookies/CSRF iguais à produção; tipos sempre em dia; acessibilidade pronta |
 
 ## 4. Arquitetura
 
@@ -167,6 +172,14 @@ Evoluir para um produto lançado e escalável, com **app mobile** convivendo com
 - **Mobile-first**: barra de navegação inferior no celular e navegação superior com colunas no desktop.
 - Componente **`EstrelasNota`**: meia estrela por toque, arraste, toque para limpar, acessível por teclado e leitor de tela.
 - PWA instalável.
+
+## 10.1 Identidade visual e frontend da Fase 1
+
+> Detalhes: [09-frontend-fase1.md](../../design/09-frontend-fase1.md)
+
+- Moderno e limpo; claro e escuro; azul (`#1D64D8` / `#6AA4FF`) com estrelas douradas (`#B97803` / `#F5B83D`); Plus Jakarta Sans.
+- Telas da Fase 1: Início, Buscar, Restaurante, Registrar visita, Perfil (Diário/Críticas), Configurações, autenticação e recuperação de senha.
+- Proxy do Vite em dev, tipos gerados do OpenAPI, token de acesso só em memória com renovação automática, Radix UI, Vitest + MSW + Playwright.
 
 ## 11. Autenticação e erros
 

@@ -1,0 +1,6 @@
+# Quebras de linha LF em todo o repositório (o Prettier e o CI esperam LF, inclusive no Windows)
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.webp binary
+*.ico binary

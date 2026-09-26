@@ -52,9 +52,50 @@ Escaneie o QR code com o app. No login do Admin, informe usuário, senha e o có
 
 Perdeu o celular? Rode o mesmo comando com `--recriar` para gerar um autenticador novo.
 
+## Rodando o frontend
+
+Pré-requisito: Node 24. O backend precisa estar no ar, na porta 8000 (veja acima): em desenvolvimento, o Vite repassa `/api` e `/media` para o Django.
+
+Um comando por linha, no PowerShell:
+
+    cd frontend
+    npm install
+    npm run dev
+
+Endereço: http://localhost:5173
+
+### Quando a API mudar
+
+Regenere o contrato no backend e os tipos TypeScript no frontend:
+
+    cd backend
+    .venv\Scripts\python.exe manage.py spectacular --file openapi.yml
+    cd ..rontend
+    npm run gerar-tipos
+
 ## Testes
 
     cd backend
     .venv\Scripts\python.exe -m pytest
 
 (no Git Bash: `.venv/Scripts/python -m pytest`)
+
+Frontend (na pasta `frontend`):
+
+    npm test
+    npm run lint
+    npm run typecheck
+
+### Ponta a ponta (Playwright)
+
+O teste percorre cadastro, busca, registro de visita e diário num navegador de verdade, contra o backend local. Antes de rodar, deixe no ar:
+
+- o banco no Docker (`docker compose up -d db`);
+- o `runserver` do Django, com os restaurantes do Rio importados (`manage.py importar_restaurantes`);
+- uma vez só, o navegador do Playwright: `npx playwright install chromium`.
+
+Depois, na pasta `frontend`:
+
+    npm run test:e2e
+
+O teste cria uma conta e a exclui no final. O backend aceita só 3 cadastros por hora por IP; se estourar, reinicie o `runserver` (o contador fica na memória).
