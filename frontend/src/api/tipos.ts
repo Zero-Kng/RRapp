@@ -11,6 +11,7 @@ export type BarraHistograma = Esquemas["BarraHistograma"];
 export type MeuRegistro = Esquemas["MeuRegistro"];
 export type Registro = Esquemas["Registro"];
 export type PerfilPublico = Esquemas["PerfilPublico"];
+export type Desejo = Esquemas["Desejo"];
 
 export type Pagina<T> = {
   count: number;

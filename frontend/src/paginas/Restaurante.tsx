@@ -3,6 +3,7 @@ import { ExternalLink, MapPin } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation, useParams } from "react-router";
 import { api } from "../api/cliente";
+import { BotaoDesejo } from "../colecoes/BotaoDesejo";
 import { codigoDeErro, dados, mensagemDeErro } from "../api/erros";
 import { Aviso } from "../componentes/Aviso";
 import { Botao } from "../componentes/Botao";
@@ -122,6 +123,7 @@ export function Restaurante() {
             Entre para registrar sua visita
           </Link>
         )}
+        <BotaoDesejo restaurante={restaurante} />
         {meu && (
           <p className="flex items-center gap-2 text-sm text-texto-secundario">
             Sua última visita: {formatarData(meu.data_visita)}
