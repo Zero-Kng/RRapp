@@ -1,7 +1,7 @@
 import { screen, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { beforeEach, expect, test } from "vitest";
-import type { Desejo } from "../api/tipos";
+import type { Desejo, Eu } from "../api/tipos";
 import { aprazivel, desejo, eu, pagina, perfilAna } from "../testes/dados";
 import { renderizar } from "../testes/renderizar";
 import { servidor } from "../testes/servidor";
@@ -26,7 +26,7 @@ beforeEach(() => {
   ordens = [];
 });
 
-async function abrirAba(usuario = eu) {
+async function abrirAba(usuario: Eu | null = eu) {
   const resultado = renderizar(undefined, { rota: "/u/ana", usuario });
   await resultado.evento.click(await screen.findByRole("tab", { name: "Desejos" }));
   return { ...resultado, painel: screen.getByRole("tabpanel") };
