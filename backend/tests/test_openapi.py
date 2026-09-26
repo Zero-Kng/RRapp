@@ -61,3 +61,12 @@ def test_arquivo_openapi_versionado_esta_atualizado(tmp_path):
     assert normalizar(versionado) == normalizar(gerado), (
         "openapi.yml desatualizado. Rode: python manage.py spectacular --file openapi.yml"
     )
+
+
+@pytest.mark.django_db
+def test_cidade_do_usuario_pode_ser_nula(esquema):
+    for componente in ("Eu", "PerfilPublico"):
+        cidade = esquema["components"]["schemas"][componente]["properties"]["cidade"]
+        assert cidade.get("nullable") or any(
+            opcao.get("nullable") for opcao in cidade.get("allOf", []) + cidade.get("oneOf", [])
+        ), componente

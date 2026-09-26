@@ -18,7 +18,7 @@ USERNAMES_RESERVADOS = {"admin", "api", "eu", "rrapp", "suporte", "configuracoes
 
 
 class EuSerializer(serializers.ModelSerializer):
-    cidade = CidadeSerializer(read_only=True)
+    cidade = CidadeSerializer(read_only=True, allow_null=True)
     membro_desde = serializers.DateTimeField(source="date_joined", read_only=True)
 
     class Meta:
@@ -128,7 +128,7 @@ class NumerosSerializer(serializers.Serializer):
 
 
 class PerfilPublicoSerializer(serializers.ModelSerializer):
-    cidade = CidadeSerializer(read_only=True)
+    cidade = CidadeSerializer(read_only=True, allow_null=True)
     membro_desde = serializers.DateTimeField(source="date_joined", read_only=True)
     numeros = serializers.SerializerMethodField()
 
