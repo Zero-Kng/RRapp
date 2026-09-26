@@ -22,7 +22,17 @@ test("cadastro, busca, registro de visita e diário", async ({ page }) => {
   await page.getByRole("link", { name: "Aprazível" }).first().click();
   await expect(page.getByRole("heading", { name: "Aprazível", level: 1 })).toBeVisible();
 
-  // 3. Registro de visita
+  // 3. Desejo: guarda e aparece na aba do perfil
+  const desejo = page.getByRole("button", { name: "Desejo" });
+  await desejo.click();
+  await expect(desejo).toHaveAttribute("aria-pressed", "true");
+  const paginaDoRestaurante = page.url();
+  await page.goto(`/u/${username}`);
+  await page.getByRole("tab", { name: "Desejos" }).click();
+  await expect(page.getByRole("tabpanel").getByRole("link", { name: /Aprazível/ })).toBeVisible();
+  await page.goto(paginaDoRestaurante);
+
+  // 4. Registro de visita (tira o restaurante dos desejos)
   await page.getByRole("button", { name: "Registrar visita" }).click();
   const nota = page.getByRole("slider", { name: "Nota" });
   await nota.focus();
@@ -32,21 +42,32 @@ test("cadastro, busca, registro de visita e diário", async ({ page }) => {
   await page.getByRole("button", { name: "Salvar" }).click();
   await expect(page.getByRole("dialog")).toBeHidden();
 
-  // 4. Diário
+  // 5. Diário, e os desejos já vazios
   await page.goto(`/u/${username}`);
   await expect(page.getByRole("link", { name: "Aprazível" })).toBeVisible();
+  await page.getByRole("tab", { name: "Desejos" }).click();
+  await expect(page.getByText(/Você ainda não guardou restaurantes/)).toBeVisible();
 
-  // 5. Configurações no celular: nada pode alargar a página além da tela
+  // 6. No celular, nada pode alargar a página além da tela
+  const semRolagemLateral = async () => {
+    const larguras = await page.evaluate(() => ({
+      pagina: document.documentElement.scrollWidth,
+      tela: document.documentElement.clientWidth,
+    }));
+    expect(larguras.pagina).toBeLessThanOrEqual(larguras.tela);
+  };
   await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto(paginaDoRestaurante);
+  await expect(page.getByRole("button", { name: "Desejo" })).toBeVisible();
+  await semRolagemLateral();
+  await page.goto(`/u/${username}`);
+  await page.getByRole("tab", { name: "Desejos" }).click();
+  await semRolagemLateral();
   await page.goto("/configuracoes");
   await expect(page.getByRole("button", { name: "Sair da conta" })).toBeVisible();
-  const larguras = await page.evaluate(() => ({
-    pagina: document.documentElement.scrollWidth,
-    tela: document.documentElement.clientWidth,
-  }));
-  expect(larguras.pagina).toBeLessThanOrEqual(larguras.tela);
+  await semRolagemLateral();
 
-  // 6. Limpeza: exclui a conta criada
+  // 7. Limpeza: exclui a conta criada
   await page.getByRole("button", { name: "Excluir conta" }).click();
   const dialogo = page.getByRole("dialog");
   await dialogo.getByLabel("Sua senha").fill(senha);

@@ -6,6 +6,7 @@ import { Link, useParams } from "react-router";
 import { api } from "../api/cliente";
 import { codigoDeErro, dados, mensagemDeErro } from "../api/erros";
 import type { Registro } from "../api/tipos";
+import { Desejos } from "../colecoes/Desejos";
 import { Avatar } from "../componentes/Avatar";
 import { Aviso } from "../componentes/Aviso";
 import { classeFoco } from "../componentes/Botao";
@@ -187,12 +188,19 @@ export function Perfil() {
           <Tabs.Trigger value="criticas" className={classeAba}>
             Críticas
           </Tabs.Trigger>
+          <Tabs.Trigger value="desejos" className={classeAba}>
+            Desejos
+          </Tabs.Trigger>
         </Tabs.List>
         <Tabs.Content value="diario" className="focus-visible:outline-none">
           <Diario username={dadosPerfil.username} ehVoce={ehVoce} />
         </Tabs.Content>
         <Tabs.Content value="criticas" className="pt-2 focus-visible:outline-none">
           <Criticas username={dadosPerfil.username} />
+        </Tabs.Content>
+        <Tabs.Content value="desejos" className="focus-visible:outline-none">
+          {/* key: outro perfil começa na ordem e na página iniciais */}
+          <Desejos key={dadosPerfil.username} username={dadosPerfil.username} ehVoce={ehVoce} />
         </Tabs.Content>
       </Tabs.Root>
     </div>

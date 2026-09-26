@@ -265,6 +265,53 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Erro'
+  /api/v1/eu/desejos/{slug}:
+    put:
+      operationId: eu_desejos_update
+      description: Guarda ou tira um restaurante dos desejos; repetir a mesma ação
+        não dá erro.
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - eu
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+        default:
+          description: Erro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+    delete:
+      operationId: eu_desejos_destroy
+      description: Guarda ou tira um restaurante dos desejos; repetir a mesma ação
+        não dá erro.
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - eu
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+        default:
+          description: Erro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
   /api/v1/eu/excluir:
     post:
       operationId: eu_excluir_create
@@ -658,6 +705,51 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Erro'
+  /api/v1/usuarios/{username}/desejos:
+    get:
+      operationId: usuarios_desejos_list
+      parameters:
+      - in: query
+        name: ordem
+        schema:
+          enum:
+          - recentes
+          - bairro
+          type: string
+          default: recentes
+          minLength: 1
+        description: |-
+          * `recentes` - recentes
+          * `bairro` - bairro
+      - name: page
+        required: false
+        in: query
+        description: Um número de página dentro do conjunto de resultados paginado.
+        schema:
+          type: integer
+      - in: path
+        name: username
+        schema:
+          type: string
+        required: true
+      tags:
+      - usuarios
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDesejoList'
+          description: ''
+        default:
+          description: Erro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
   /api/v1/usuarios/{username}/diario:
     get:
       operationId: usuarios_diario_list
@@ -825,6 +917,20 @@ components:
           maxLength: 128
       required:
       - senha
+    Desejo:
+      type: object
+      properties:
+        restaurante:
+          allOf:
+          - $ref: '#/components/schemas/RestauranteResumo'
+          readOnly: true
+        adicionado_em:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - adicionado_em
+      - restaurante
     EsqueciSenhaRequest:
       type: object
       properties:
@@ -932,6 +1038,31 @@ components:
       required:
       - visitados
       - visitados_este_ano
+    PaginatedDesejoList:
+      type: object
+      required:
+      - count
+      - next
+      - previous
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Desejo'
     PaginatedRegistroList:
       type: object
       required:
@@ -1237,6 +1368,9 @@ components:
           - $ref: '#/components/schemas/MeuRegistro'
           nullable: true
           readOnly: true
+        na_minha_lista_de_desejos:
+          type: boolean
+          readOnly: true
       required:
       - bairro
       - categorias
@@ -1248,6 +1382,7 @@ components:
       - link_mapa
       - longitude
       - meu_ultimo_registro
+      - na_minha_lista_de_desejos
       - nome
       - nota_media
       - slug

@@ -1,5 +1,6 @@
 import type {
   Cidade,
+  Desejo,
   Eu,
   Pagina,
   PerfilPublico,
@@ -43,6 +44,7 @@ export const aprazivelDetalhe: RestauranteDetalhe = {
     quantidade,
   })),
   meu_ultimo_registro: null,
+  na_minha_lista_de_desejos: false,
 };
 
 export function registro(sobrescrever: Partial<Registro> = {}): Registro {
@@ -59,6 +61,10 @@ export function registro(sobrescrever: Partial<Registro> = {}): Registro {
     atualizado_em: "2026-09-20T21:00:00-03:00",
     ...sobrescrever,
   };
+}
+
+export function desejo(sobrescrever: Partial<Desejo> = {}): Desejo {
+  return { restaurante: aprazivel, adicionado_em: "2026-09-21T12:00:00-03:00", ...sobrescrever };
 }
 
 export const perfilAna: PerfilPublico = {

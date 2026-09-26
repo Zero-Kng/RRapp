@@ -22,6 +22,7 @@ from contas.autenticacao import (
     encerrar_sessoes,
     exigir_csrf,
 )
+from contas.consultas import usuario_ativo
 from contas.models import Usuario
 from contas.senhas import enviar_email_redefinicao, usuario_do_link
 from contas.serializers import (
@@ -246,17 +247,13 @@ class FiltrosDiarioSerializer(serializers.Serializer):
     mes = serializers.IntegerField(required=False, min_value=1, max_value=12)
 
 
-def _usuario_ativo(username: str) -> Usuario:
-    return get_object_or_404(Usuario, username__iexact=username, is_active=True)
-
-
 @extend_schema_view(get=extend_schema(parameters=[FiltrosDiarioSerializer]))
 class DiarioView(generics.ListAPIView):
     serializer_class = RegistroSerializer
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        usuario = _usuario_ativo(self.kwargs["username"])
+        usuario = usuario_ativo(self.kwargs["username"])
         filtros = FiltrosDiarioSerializer(data=self.request.query_params)
         filtros.is_valid(raise_exception=True)
         registros = registros_com_relacoes().filter(usuario=usuario)
@@ -272,7 +269,7 @@ class CriticasView(generics.ListAPIView):
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        usuario = _usuario_ativo(self.kwargs["username"])
+        usuario = usuario_ativo(self.kwargs["username"])
         return (
             registros_com_relacoes()
             .filter(usuario=usuario)
