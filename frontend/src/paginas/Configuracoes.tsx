@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { LogOut } from "lucide-react";
 import { Dialog } from "radix-ui";
 import { useEffect, useId, useState, type ChangeEvent, type ReactNode } from "react";
 import { useForm, useWatch } from "react-hook-form";
@@ -372,6 +373,26 @@ function SecaoExcluir() {
   );
 }
 
+// No celular o topo esconde o botão "Sair"; este é o caminho até ele
+function SecaoSair() {
+  const { sair } = useSessao();
+  const navegar = useNavigate();
+  const [saindo, setSaindo] = useState(false);
+
+  async function aoSair() {
+    setSaindo(true);
+    await sair();
+    navegar("/");
+  }
+
+  return (
+    <Botao variante="secundaria" disabled={saindo} onClick={() => void aoSair()}>
+      <LogOut aria-hidden="true" className="size-4" />
+      {saindo ? "Saindo…" : "Sair da conta"}
+    </Botao>
+  );
+}
+
 export function Configuracoes() {
   useTitulo("Configurações");
   const { usuario } = useSessao();
@@ -388,6 +409,9 @@ export function Configuracoes() {
       </Secao>
       <Secao titulo="Senha" descricao="Trocar a senha encerra suas outras sessões.">
         <SecaoSenha />
+      </Secao>
+      <Secao titulo="Sessão" descricao="Encerra a sessão neste aparelho.">
+        <SecaoSair />
       </Secao>
       <Secao titulo="Excluir conta" descricao="Apaga sua conta e todos os seus dados.">
         <SecaoExcluir />

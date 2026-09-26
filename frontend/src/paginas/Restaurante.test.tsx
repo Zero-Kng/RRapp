@@ -1,6 +1,7 @@
 import { screen } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
-import { expect, test } from "vitest";
+import { afterEach, expect, test } from "vitest";
+import { definirAcesso } from "../api/sessao";
 import type { RestauranteDetalhe } from "../api/tipos";
 import { aprazivelDetalhe, eu, pagina, registro } from "../testes/dados";
 import { renderizar } from "../testes/renderizar";
@@ -8,6 +9,8 @@ import { servidor } from "../testes/servidor";
 import { formatarData, mesDoAno } from "../util/datas";
 
 const ROTA = "/r/aprazivel-santa-teresa";
+
+afterEach(() => definirAcesso(null));
 
 function responder(detalhe: RestauranteDetalhe = aprazivelDetalhe, criticas = [registro()]) {
   servidor.use(
@@ -86,4 +89,31 @@ test("restaurante inexistente mostra página não encontrada", async () => {
 test("datas no formato brasileiro sem trocar de dia", () => {
   expect(formatarData("2026-09-20")).toBe("20 de set. de 2026");
   expect(mesDoAno("2026-09-20")).toBe("setembro de 2026");
+});
+
+test("entrar pela página do restaurante mostra a sua última visita ao voltar", async () => {
+  const meu = registro({ id: 9, data_visita: "2026-09-20" });
+  servidor.use(
+    // Como o backend: só quem está autenticado recebe meu_ultimo_registro
+    http.get("*/api/v1/restaurantes/aprazivel-santa-teresa", ({ request }) =>
+      HttpResponse.json({
+        ...aprazivelDetalhe,
+        meu_ultimo_registro: request.headers.has("Authorization") ? meu : null,
+      }),
+    ),
+    http.get("*/api/v1/restaurantes/aprazivel-santa-teresa/registros", () =>
+      HttpResponse.json(pagina([])),
+    ),
+    http.post("*/api/v1/auth/login", () => HttpResponse.json({ usuario: eu, acesso: "t" })),
+  );
+  const { evento, clienteConsultas } = renderizar(undefined, { rota: ROTA });
+  // Como no App: dados ficam "frescos" por 30 s e não são buscados de novo ao voltar
+  clienteConsultas.setDefaultOptions({ queries: { retry: false, staleTime: 30_000 } });
+
+  await evento.click(await screen.findByRole("link", { name: "Entre para registrar sua visita" }));
+  await evento.type(screen.getByLabelText("E-mail ou usuário"), "ana");
+  await evento.type(screen.getByLabelText("Senha"), "senha-forte-123");
+  await evento.click(screen.getByRole("button", { name: "Entrar" }));
+
+  expect(await screen.findByText(`Sua última visita: ${formatarData("2026-09-20")}`)).toBeVisible();
 });

@@ -32,10 +32,12 @@ export function Entrar() {
     setErroGeral(null);
     try {
       await entrar(login, senha);
-      navegar(destinoSeguro(parametros.get("voltar")), { replace: true });
     } catch (erro) {
       setErroGeral(mensagemDeErro(erro));
+      return;
     }
+    // Fora do try: um erro de navegação não deve parecer falha de login
+    navegar(destinoSeguro(parametros.get("voltar")), { replace: true });
   }
 
   return (
