@@ -9,6 +9,8 @@ export default mergeConfig(
       setupFiles: ["./src/testes/setup.ts"],
       include: ["src/**/*.test.{ts,tsx}"],
       css: false,
+      // Testes que digitam em vários campos passam de 5 s (o padrão) em máquinas mais lentas
+      testTimeout: 15_000,
     },
   }),
 );
