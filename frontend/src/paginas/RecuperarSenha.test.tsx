@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { expect, test } from "vitest";
 import { renderizar } from "../testes/renderizar";
@@ -44,7 +44,10 @@ test("redefinir com link válido confirma e oferece entrar", async () => {
   await preencherNovaSenha(evento, "outra-senha-forte");
 
   expect(await screen.findByRole("status")).toHaveTextContent("Senha redefinida.");
-  expect(screen.getByRole("link", { name: "Entrar" })).toHaveAttribute("href", "/entrar");
+  expect(within(screen.getByRole("main")).getByRole("link", { name: "Entrar" })).toHaveAttribute(
+    "href",
+    "/entrar",
+  );
   expect(corpo).toEqual({ uid: "MQ", token: "abc", nova_senha: "outra-senha-forte" });
 });
 
