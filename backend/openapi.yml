@@ -984,6 +984,36 @@ components:
       - membro_desde
       - nome_exibicao
       - username
+    Foto:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        imagem:
+          type: string
+          format: uri
+          nullable: true
+          readOnly: true
+          description: Lado maior até 1.600 px.
+        miniatura:
+          type: string
+          format: uri
+          nullable: true
+          readOnly: true
+          description: Lado maior até 480 px.
+        largura:
+          type: integer
+          readOnly: true
+        altura:
+          type: integer
+          readOnly: true
+      required:
+      - altura
+      - id
+      - imagem
+      - largura
+      - miniatura
     LoginRequest:
       type: object
       properties:
@@ -1250,6 +1280,11 @@ components:
           type: boolean
         revisita:
           type: boolean
+        fotos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Foto'
+          readOnly: true
         criado_em:
           type: string
           format: date-time
@@ -1264,6 +1299,7 @@ components:
       - critica
       - curtiu
       - data_visita
+      - fotos
       - id
       - nota
       - restaurante

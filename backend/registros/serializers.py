@@ -7,9 +7,16 @@ from contas.serializers import UsuarioResumoSerializer
 from lugares.models import Restaurante
 from lugares.serializers import RestauranteResumoSerializer
 from registros.campos import CampoNota
-from registros.models import Registro
+from registros.models import FotoRegistro, Registro
 
 DATA_MINIMA = datetime.date(1900, 1, 1)
+
+
+class FotoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FotoRegistro
+        fields = ["id", "imagem", "miniatura", "largura", "altura"]
+        read_only_fields = fields
 
 
 class RegistroSerializer(serializers.ModelSerializer):
@@ -23,6 +30,7 @@ class RegistroSerializer(serializers.ModelSerializer):
     usuario = UsuarioResumoSerializer(read_only=True)
     nota = CampoNota(required=False, allow_null=True)
     critica = serializers.CharField(required=False, allow_blank=True, max_length=5000)
+    fotos = FotoSerializer(many=True, read_only=True)
 
     class Meta:
         model = Registro
@@ -36,6 +44,7 @@ class RegistroSerializer(serializers.ModelSerializer):
             "critica",
             "curtiu",
             "revisita",
+            "fotos",
             "criado_em",
             "atualizado_em",
         ]
