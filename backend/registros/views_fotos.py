@@ -53,7 +53,11 @@ class FotosDoRegistroView(APIView):
         with transaction.atomic():
             # Trava o registro: dois envios ao mesmo tempo não passam do limite
             Registro.objects.select_for_update().filter(pk=registro.pk).first()
-            if registro.fotos.count() >= MAXIMO_FOTOS_POR_REGISTRO:
+            # Conta no banco (não no cache do prefetch, lido antes da trava)
+            if (
+                FotoRegistro.objects.filter(registro_id=registro.pk).count()
+                >= MAXIMO_FOTOS_POR_REGISTRO
+            ):
                 raise serializers.ValidationError({"imagem": [MENSAGEM_LIMITE]})
             criada = FotoRegistro.objects.create(
                 registro=registro,

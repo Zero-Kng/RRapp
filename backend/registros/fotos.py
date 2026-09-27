@@ -3,7 +3,6 @@
 from dataclasses import dataclass
 
 from django.core.files.base import ContentFile
-from PIL import Image
 
 from config.imagens import abrir_imagem, regravar_webp
 
@@ -11,7 +10,7 @@ TAMANHO_MAXIMO = 10 * 1024 * 1024
 PIXELS_MAXIMOS = 40_000_000
 LADO_GRANDE = 1600
 LADO_MINIATURA = 480
-FORMATOS = {"JPEG", "PNG", "WEBP", "HEIF"}
+FORMATOS = {"JPEG", "MPO", "PNG", "WEBP", "HEIF"}
 MENSAGEM_FORMATO = "Envie uma imagem JPG, PNG, WebP ou HEIC."
 MENSAGEM_TAMANHO = "A imagem deve ter no máximo 10 MB."
 
@@ -32,11 +31,11 @@ def processar_foto(arquivo) -> FotoProcessada:
         formatos=FORMATOS,
         mensagem_formato=MENSAGEM_FORMATO,
         mensagem_tamanho=MENSAGEM_TAMANHO,
+        reduzir_para=LADO_GRANDE,
     )
+    # A mesma imagem é reduzida no lugar: primeiro à versão grande, depois à miniatura
     grande = regravar_webp(imagem, LADO_GRANDE)
-    with Image.open(grande) as gravada:  # dimensões exatas do que foi gravado (só lê o cabeçalho)
-        largura, altura = gravada.size
-    grande.seek(0)
+    largura, altura = imagem.size
     return FotoProcessada(
         imagem=grande,
         miniatura=regravar_webp(imagem, LADO_MINIATURA),
