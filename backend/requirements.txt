@@ -11,3 +11,4 @@ django-cors-headers>=4.9
 django-otp>=1.7.3
 qrcode>=8.2
 Pillow>=12.3.0
+pillow-heif>=1.8
