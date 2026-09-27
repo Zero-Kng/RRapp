@@ -6,7 +6,7 @@ import { useId, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { api } from "../api/cliente";
-import { aplicarErros, dados, errosDeCampo } from "../api/erros";
+import { aplicarErros, dados, errosDeCampo, mensagemDeErro } from "../api/erros";
 import type { components } from "../api/esquema";
 import { Aviso } from "../componentes/Aviso";
 import { Botao, classeFoco } from "../componentes/Botao";
@@ -29,13 +29,22 @@ const esquema = z.object({
 type Dados = z.infer<typeof esquema>;
 
 /** Envio das fotos depois de criado o registro: uma por vez, guardando as que falharem. */
+type Falha = { foto: File; mensagem: string; podeTentar: boolean };
 type Envio = {
   registroId: number;
   total: number;
   atual: number;
-  falhas: File[];
+  falhas: Falha[];
   enviando: boolean;
 };
+
+/** Recusa do servidor (erro no campo "imagem") não passa tentando de novo; rede, 5xx e 429 podem. */
+function falhaDoEnvio(foto: File, erro: unknown): Falha {
+  const doCampo = errosDeCampo(erro).imagem;
+  return doCampo
+    ? { foto, mensagem: doCampo, podeTentar: false }
+    : { foto, mensagem: mensagemDeErro(erro), podeTentar: true };
+}
 
 type Props = {
   restaurante: { slug: string; nome: string };
@@ -101,7 +110,7 @@ export function RegistrarVisita({ restaurante, aberto, aoMudarAberto }: Props) {
   }
 
   async function enviarFotos(registroId: number, lista: File[]) {
-    const falhas: File[] = [];
+    const falhas: Falha[] = [];
     for (const [indice, foto] of lista.entries()) {
       setEnvio({ registroId, total: lista.length, atual: indice + 1, falhas: [], enviando: true });
       const formulario = new FormData();
@@ -113,8 +122,8 @@ export function RegistrarVisita({ restaurante, aberto, aoMudarAberto }: Props) {
             body: formulario as unknown as components["schemas"]["EnvioFotoRequest"],
           }),
         );
-      } catch {
-        falhas.push(foto);
+      } catch (erro) {
+        falhas.push(falhaDoEnvio(foto, erro));
       }
     }
     invalidar();
@@ -199,15 +208,29 @@ export function RegistrarVisita({ restaurante, aberto, aoMudarAberto }: Props) {
                         ? "Não foi possível enviar 1 foto."
                         : `Não foi possível enviar ${envio.falhas.length} fotos.`}
                     </p>
+                    {[...new Set(envio.falhas.map((falha) => falha.mensagem))].map((mensagem) => (
+                      <p key={mensagem}>{mensagem}</p>
+                    ))}
                     <p>A visita já está salva.</p>
                   </Aviso>
                   <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                     <Botao variante="secundaria" onClick={fechar}>
                       Fechar
                     </Botao>
-                    <Botao onClick={() => void enviarFotos(envio.registroId, envio.falhas)}>
-                      Tentar de novo
-                    </Botao>
+                    {envio.falhas.some((falha) => falha.podeTentar) && (
+                      <Botao
+                        onClick={() =>
+                          void enviarFotos(
+                            envio.registroId,
+                            envio.falhas
+                              .filter((falha) => falha.podeTentar)
+                              .map((falha) => falha.foto),
+                          )
+                        }
+                      >
+                        Tentar de novo
+                      </Botao>
+                    )}
                   </div>
                 </>
               )}

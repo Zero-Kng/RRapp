@@ -23,7 +23,9 @@ export function TelaCheiaFotos({ registro, inicial, aberto, aoMudarAberto }: Pro
   const { usuario } = useSessao();
   const clienteConsultas = useQueryClient();
   const [indice, setIndice] = useState(inicial);
-  const [confirmando, setConfirmando] = useState(false);
+  // Id da foto em confirmação: fixado ao abrir, para as setas não trocarem a foto a apagar
+  const [paraApagar, setParaApagar] = useState<number | null>(null);
+  const confirmando = paraApagar !== null;
   const { fotos, restaurante } = registro;
   const total = fotos.length;
   const atual = fotos[Math.min(indice, total - 1)];
@@ -34,19 +36,20 @@ export function TelaCheiaFotos({ registro, inicial, aberto, aoMudarAberto }: Pro
     mutationFn: () =>
       dados(
         api.DELETE("/api/v1/registros/{id}/fotos/{foto_id}", {
-          params: { path: { id: registro.id, foto_id: atual.id } },
+          params: { path: { id: registro.id, foto_id: paraApagar ?? atual.id } },
         }),
       ),
     onSuccess: () => {
       for (const chave of ["diario", "criticas", "restaurante", "perfil"]) {
         void clienteConsultas.invalidateQueries({ queryKey: [chave] });
       }
-      setConfirmando(false);
+      setParaApagar(null);
       aoMudarAberto(false);
     },
   });
 
   function aoTeclar(evento: KeyboardEvent) {
+    if (confirmando) return; // com a confirmação aberta, a foto não muda
     if (evento.key === "ArrowLeft") setIndice((i) => Math.max(0, i - 1));
     if (evento.key === "ArrowRight") setIndice((i) => Math.min(total - 1, i + 1));
   }
@@ -73,7 +76,7 @@ export function TelaCheiaFotos({ registro, inicial, aberto, aoMudarAberto }: Pro
               {ehDono && (
                 <button
                   type="button"
-                  onClick={() => setConfirmando(true)}
+                  onClick={() => setParaApagar(atual.id)}
                   className={`inline-flex min-h-11 items-center gap-2 rounded-full bg-white/10 px-4 text-sm font-semibold hover:bg-white/20 ${classeFoco}`}
                 >
                   <Trash2 aria-hidden="true" className="size-4" />
@@ -121,7 +124,7 @@ export function TelaCheiaFotos({ registro, inicial, aberto, aoMudarAberto }: Pro
           <Dialog.Root
             open={confirmando}
             onOpenChange={(abrir) => {
-              setConfirmando(abrir);
+              if (!abrir) setParaApagar(null);
               apagar.reset();
             }}
           >

@@ -303,3 +303,41 @@ test("fechar depois de uma falha mantém o registro", async () => {
   expect(clienteConsultas.getQueryState(chave)?.isInvalidated).toBe(true);
   expect(corpos).toHaveLength(1);
 });
+
+test("HEIC sem tipo (Windows) pode ser escolhido no campo", async () => {
+  const { evento } = abrir();
+
+  // O upload do user-event respeita o "accept" do campo, como a janela de arquivos do sistema
+  await evento.upload(
+    screen.getByLabelText("Fotos (até 4)"),
+    new File(["x"], "IMG_1.HEIC", { type: "" }),
+  );
+
+  expect(screen.getByRole("button", { name: "Tirar foto 1" })).toBeVisible();
+});
+
+test("foto recusada pelo servidor mostra o motivo e não oferece tentar de novo", async () => {
+  aceitarRegistro();
+  servidor.use(
+    http.post("*/api/v1/registros/1/fotos", () =>
+      HttpResponse.json(
+        {
+          erro: {
+            codigo: "dados_invalidos",
+            mensagem: "Dados inválidos.",
+            campos: { imagem: ["A imagem é grande demais (dimensões)."] },
+          },
+        },
+        { status: 400 },
+      ),
+    ),
+  );
+  const { evento } = abrir();
+
+  await evento.upload(screen.getByLabelText("Fotos (até 4)"), [fotoPng("FOTO-1")]);
+  await evento.click(screen.getByRole("button", { name: "Salvar" }));
+
+  expect(await screen.findByText("A imagem é grande demais (dimensões).")).toBeVisible();
+  expect(screen.queryByRole("button", { name: "Tentar de novo" })).not.toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Fechar" })).toBeVisible();
+});
