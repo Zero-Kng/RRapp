@@ -1060,16 +1060,10 @@ components:
           readOnly: true
         imagem:
           type: string
-          format: uri
-          nullable: true
           readOnly: true
-          description: Lado maior até 1.600 px.
         miniatura:
           type: string
-          format: uri
-          nullable: true
           readOnly: true
-          description: Lado maior até 480 px.
         largura:
           type: integer
           readOnly: true
