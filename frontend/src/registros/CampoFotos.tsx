@@ -1,7 +1,12 @@
 import { ImagePlus, X } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { classeFoco } from "../componentes/Botao";
-import { MAXIMO_FOTOS, MENSAGEM_LIMITE_FOTOS, TIPOS_FOTO, validarFoto } from "../util/fotos";
+import {
+  ACEITAS_NO_SELETOR,
+  MAXIMO_FOTOS,
+  MENSAGEM_LIMITE_FOTOS,
+  validarFoto,
+} from "../util/fotos";
 
 type Props = {
   fotos: File[];
@@ -54,7 +59,7 @@ export function CampoFotos({ fotos, aoMudar, desabilitado = false }: Props) {
         ref={entrada}
         id={id}
         type="file"
-        accept={TIPOS_FOTO.join(",")}
+        accept={ACEITAS_NO_SELETOR}
         multiple
         disabled={desabilitado}
         onChange={aoEscolher}

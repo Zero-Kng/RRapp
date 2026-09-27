@@ -91,3 +91,16 @@ test("no registro de outra pessoa não há como apagar", async () => {
   await screen.findByRole("dialog");
   expect(screen.queryByRole("button", { name: "Apagar esta foto" })).not.toBeInTheDocument();
 });
+
+test("com a confirmação aberta, as setas não trocam a foto que será apagada", async () => {
+  responder([comDuasFotos]);
+  const { evento } = abrir(eu);
+
+  await evento.click(await screen.findByRole("button", { name: "Ver foto 2 de 2" }));
+  await evento.click(await screen.findByRole("button", { name: "Apagar esta foto" }));
+  await screen.findByRole("button", { name: "Apagar" });
+  await evento.keyboard("{ArrowLeft}");
+  await evento.click(screen.getByRole("button", { name: "Apagar" }));
+
+  await waitFor(() => expect(apagadas).toEqual(["7/2"]));
+});
