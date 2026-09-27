@@ -2,7 +2,7 @@ from django.conf import settings
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
-from registros.models import Registro
+from registros.models import FotoRegistro, Registro
 from registros.notas import recalcular_nota
 
 
@@ -27,3 +27,10 @@ def atualizar_notas_ao_suspender_ou_reativar(
     )
     for restaurante_id in restaurantes:
         recalcular_nota(restaurante_id)
+
+
+@receiver(post_delete, sender=FotoRegistro)
+def apagar_arquivos_da_foto(sender, instance: FotoRegistro, **kwargs) -> None:
+    """Vale para a API, o Admin e as cascatas (registro apagado, conta excluída)."""
+    instance.imagem.delete(save=False)
+    instance.miniatura.delete(save=False)

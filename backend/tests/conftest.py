@@ -25,6 +25,13 @@ def _limpar_cache():
 
 
 @pytest.fixture
+def midia_temporaria(settings, tmp_path):
+    """Arquivos enviados (avatar, fotos) vão para uma pasta temporária do teste."""
+    settings.MEDIA_ROOT = tmp_path
+    return tmp_path
+
+
+@pytest.fixture
 def api():
     from rest_framework.test import APIClient
 
