@@ -176,3 +176,168 @@ test("salvar atualiza a página do restaurante", async () => {
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   await expect.poll(() => detalhesPedidos).toBe(2);
 });
+
+// ---------- Fotos ----------
+
+// A ponte jsdom → fetch do Vitest leva o tipo de cada parte, mas não os bytes do arquivo:
+// cada foto de teste tem um tipo próprio, e é por ele que o servidor falso sabe qual chegou
+const TIPOS: Record<string, string> = {
+  "FOTO-1": "image/png",
+  "FOTO-2": "image/jpeg",
+  "FOTO-3": "image/webp",
+  "FOTO-4": "image/heic",
+  "FOTO-5": "image/heif",
+};
+const fotoPng = (marca: string) => new File([marca], `${marca}.img`, { type: TIPOS[marca] });
+const marcaDoCorpo = (corpo: string) =>
+  Object.entries(TIPOS).find(([, tipo]) => corpo.includes(`Content-Type: ${tipo}`))?.[0] ?? "?";
+
+function aceitarFotos({ falharNas = [] as number[], esperar = Promise.resolve() } = {}) {
+  const recebidas: string[] = [];
+  let chamadas = 0;
+  servidor.use(
+    http.post("*/api/v1/registros/1/fotos", async ({ request }) => {
+      chamadas += 1;
+      // O corpo multipart vem como texto: o formData() do Node não aceita o File do jsdom
+      const corpo = await request.text();
+      await esperar;
+      if (falharNas.includes(chamadas)) return new HttpResponse(null, { status: 500 });
+      recebidas.push(marcaDoCorpo(corpo));
+      return HttpResponse.json(
+        {
+          id: chamadas,
+          imagem: "http://x/g.webp",
+          miniatura: "http://x/m.webp",
+          largura: 10,
+          altura: 10,
+        },
+        { status: 201 },
+      );
+    }),
+  );
+  return { recebidas, chamadas: () => chamadas };
+}
+
+test("salva a visita e envia as fotos uma por vez, com progresso", async () => {
+  aceitarRegistro();
+  let liberar!: () => void;
+  const fotos = aceitarFotos({ esperar: new Promise<void>((resolver) => (liberar = resolver)) });
+  const { evento } = abrir();
+
+  await evento.upload(screen.getByLabelText("Fotos (até 4)"), [
+    fotoPng("FOTO-1"),
+    fotoPng("FOTO-2"),
+  ]);
+  await evento.click(screen.getByRole("button", { name: "Salvar" }));
+
+  expect(await screen.findByText("Enviando fotos… 1 de 2")).toBeVisible();
+  liberar();
+  expect(await screen.findByText("fechado")).toBeInTheDocument();
+  expect(fotos.recebidas).toEqual(["FOTO-1", "FOTO-2"]);
+  expect(corpos).toHaveLength(1);
+});
+
+test("não deixa escolher mais de 4 fotos", async () => {
+  const { evento } = abrir();
+
+  await evento.upload(
+    screen.getByLabelText("Fotos (até 4)"),
+    [1, 2, 3, 4, 5].map((n) => fotoPng(`FOTO-${n}`)),
+  );
+
+  expect(screen.getByText("Cada visita pode ter até 4 fotos.")).toBeVisible();
+  expect(screen.getAllByRole("button", { name: /^Tirar foto/ })).toHaveLength(4);
+});
+
+test("tirar uma foto antes de salvar", async () => {
+  aceitarRegistro();
+  const fotos = aceitarFotos();
+  const { evento } = abrir();
+
+  await evento.upload(screen.getByLabelText("Fotos (até 4)"), [
+    fotoPng("FOTO-1"),
+    fotoPng("FOTO-2"),
+  ]);
+  await evento.click(screen.getByRole("button", { name: "Tirar foto 1" }));
+  await evento.click(screen.getByRole("button", { name: "Salvar" }));
+
+  expect(await screen.findByText("fechado")).toBeInTheDocument();
+  expect(fotos.recebidas).toEqual(["FOTO-2"]);
+});
+
+test("falha no meio: registro fica salvo e só a foto que falhou é reenviada", async () => {
+  aceitarRegistro();
+  const fotos = aceitarFotos({ falharNas: [2] });
+  const { evento } = abrir();
+
+  await evento.upload(screen.getByLabelText("Fotos (até 4)"), [
+    fotoPng("FOTO-1"),
+    fotoPng("FOTO-2"),
+    fotoPng("FOTO-3"),
+  ]);
+  await evento.click(screen.getByRole("button", { name: "Salvar" }));
+
+  expect(await screen.findByText("Não foi possível enviar 1 foto.")).toBeVisible();
+  expect(fotos.recebidas).toEqual(["FOTO-1", "FOTO-3"]);
+  await evento.click(screen.getByRole("button", { name: "Tentar de novo" }));
+
+  expect(await screen.findByText("fechado")).toBeInTheDocument();
+  expect(fotos.recebidas).toEqual(["FOTO-1", "FOTO-3", "FOTO-2"]);
+  expect(fotos.chamadas()).toBe(4);
+  expect(corpos).toHaveLength(1);
+});
+
+test("fechar depois de uma falha mantém o registro", async () => {
+  aceitarRegistro();
+  aceitarFotos({ falharNas: [1] });
+  const { evento, clienteConsultas } = abrir();
+  const chave = ["diario", "ana", 1];
+  clienteConsultas.setQueryData(chave, pagina([]));
+
+  await evento.upload(screen.getByLabelText("Fotos (até 4)"), [fotoPng("FOTO-1")]);
+  await evento.click(screen.getByRole("button", { name: "Salvar" }));
+  await screen.findByText("Não foi possível enviar 1 foto.");
+  await evento.click(screen.getByRole("button", { name: "Fechar" }));
+
+  expect(await screen.findByText("fechado")).toBeInTheDocument();
+  expect(clienteConsultas.getQueryState(chave)?.isInvalidated).toBe(true);
+  expect(corpos).toHaveLength(1);
+});
+
+test("HEIC sem tipo (Windows) pode ser escolhido no campo", async () => {
+  const { evento } = abrir();
+
+  // O upload do user-event respeita o "accept" do campo, como a janela de arquivos do sistema
+  await evento.upload(
+    screen.getByLabelText("Fotos (até 4)"),
+    new File(["x"], "IMG_1.HEIC", { type: "" }),
+  );
+
+  expect(screen.getByRole("button", { name: "Tirar foto 1" })).toBeVisible();
+});
+
+test("foto recusada pelo servidor mostra o motivo e não oferece tentar de novo", async () => {
+  aceitarRegistro();
+  servidor.use(
+    http.post("*/api/v1/registros/1/fotos", () =>
+      HttpResponse.json(
+        {
+          erro: {
+            codigo: "dados_invalidos",
+            mensagem: "Dados inválidos.",
+            campos: { imagem: ["A imagem é grande demais (dimensões)."] },
+          },
+        },
+        { status: 400 },
+      ),
+    ),
+  );
+  const { evento } = abrir();
+
+  await evento.upload(screen.getByLabelText("Fotos (até 4)"), [fotoPng("FOTO-1")]);
+  await evento.click(screen.getByRole("button", { name: "Salvar" }));
+
+  expect(await screen.findByText("A imagem é grande demais (dimensões).")).toBeVisible();
+  expect(screen.queryByRole("button", { name: "Tentar de novo" })).not.toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Fechar" })).toBeVisible();
+});

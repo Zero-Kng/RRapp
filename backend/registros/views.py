@@ -12,7 +12,7 @@ def registros_com_relacoes():
     return (
         Registro.objects.filter(usuario__is_active=True)
         .select_related("usuario", "restaurante__cidade")
-        .prefetch_related("restaurante__categorias")
+        .prefetch_related("restaurante__categorias", "fotos")
     )
 
 

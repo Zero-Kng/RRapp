@@ -42,3 +42,24 @@ class Registro(models.Model):
 
     def __str__(self) -> str:
         return f"{self.usuario} em {self.restaurante} ({self.data_visita})"
+
+
+MAXIMO_FOTOS_POR_REGISTRO = 4
+
+
+class FotoRegistro(models.Model):
+    """Foto de uma visita, já regravada em WebP (sem EXIF/GPS) em duas versões."""
+
+    registro = models.ForeignKey(Registro, on_delete=models.CASCADE, related_name="fotos")
+    imagem = models.ImageField(upload_to="fotos/", help_text="Lado maior até 1.600 px.")
+    miniatura = models.ImageField(upload_to="fotos/", help_text="Lado maior até 480 px.")
+    largura = models.PositiveIntegerField()
+    altura = models.PositiveIntegerField()
+    criada_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["criada_em", "id"]
+        verbose_name = "foto"
+
+    def __str__(self) -> str:
+        return f"Foto {self.pk} de {self.registro}"

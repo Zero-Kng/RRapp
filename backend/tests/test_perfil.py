@@ -162,3 +162,16 @@ def test_edicao_de_perfil_e_limitada(api_logado, monkeypatch):
     codigos = [api_logado.patch(EDITAR, {"bio": "oi"}).status_code for _ in range(3)]
 
     assert codigos == [200, 200, 429]
+
+
+@pytest.mark.django_db
+def test_avatar_jpeg_com_imagens_embutidas_e_aceito(api_logado, usuario):
+    buffer = BytesIO()
+    Image.new("RGB", (800, 600), "orange").save(
+        buffer, format="MPO", save_all=True, append_images=[Image.new("RGB", (200, 150))]
+    )
+    enviado = SimpleUploadedFile("IMG_0002.JPG", buffer.getvalue(), content_type="image/jpeg")
+
+    resposta = api_logado.patch(EDITAR, {"avatar": enviado}, format="multipart")
+
+    assert resposta.status_code == 200

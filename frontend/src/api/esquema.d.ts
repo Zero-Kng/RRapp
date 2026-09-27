@@ -264,6 +264,39 @@ export interface paths {
         patch: operations["registros_partial_update"];
         trace?: never;
     };
+    "/api/v1/registros/{id}/fotos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Envia uma foto para uma visita (até 4). Cada envio é uma foto. */
+        post: operations["registros_fotos_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/registros/{id}/fotos/{foto_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["registros_fotos_destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/restaurantes": {
         parameters: {
             query?: never;
@@ -424,6 +457,10 @@ export interface components {
             /** Format: date-time */
             readonly adicionado_em: string;
         };
+        EnvioFotoRequest: {
+            /** Format: binary */
+            imagem: string;
+        };
         EsqueciSenhaRequest: {
             /** Format: email */
             email: string;
@@ -447,6 +484,13 @@ export interface components {
             readonly cidade: components["schemas"]["Cidade"] | null;
             /** Format: date-time */
             readonly membro_desde: string;
+        };
+        Foto: {
+            readonly id: number;
+            readonly imagem: string;
+            readonly miniatura: string;
+            readonly largura: number;
+            readonly altura: number;
         };
         LoginRequest: {
             login: string;
@@ -569,6 +613,7 @@ export interface components {
             critica: string;
             curtiu: boolean;
             revisita: boolean;
+            readonly fotos: components["schemas"]["Foto"][];
             /** Format: date-time */
             readonly criado_em: string;
             /** Format: date-time */
@@ -1263,6 +1308,70 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["Registro"];
                 };
+            };
+            /** @description Erro */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Erro"];
+                };
+            };
+        };
+    };
+    registros_fotos_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["EnvioFotoRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Foto"];
+                };
+            };
+            /** @description Erro */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Erro"];
+                };
+            };
+        };
+    };
+    registros_fotos_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                foto_id: number;
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Erro */
             default: {
