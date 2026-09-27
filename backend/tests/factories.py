@@ -1,11 +1,15 @@
 import datetime
+from io import BytesIO
 
 import factory
+from django.core.files.uploadedfile import SimpleUploadedFile
+from PIL import Image
 
 from colecoes.models import Desejo
 from contas.models import Usuario
 from lugares.models import Categoria, Cidade, Restaurante
-from registros.models import Registro
+from registros.fotos import processar_foto
+from registros.models import FotoRegistro, Registro
 
 
 class CidadeFactory(factory.django.DjangoModelFactory):
@@ -62,3 +66,23 @@ class DesejoFactory(factory.django.DjangoModelFactory):
 
     usuario = factory.SubFactory(UsuarioFactory)
     restaurante = factory.SubFactory(RestauranteFactory)
+
+
+class FotoRegistroFactory(factory.django.DjangoModelFactory):
+    """Foto de verdade (processada como na API), gravada no MEDIA_ROOT do teste."""
+
+    class Meta:
+        model = FotoRegistro
+
+    registro = factory.SubFactory(RegistroFactory)
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        buffer = BytesIO()
+        Image.new("RGB", (640, 480), "orange").save(buffer, format="JPEG")
+        foto = processar_foto(SimpleUploadedFile("foto.jpg", buffer.getvalue()))
+        kwargs.setdefault("imagem", foto.imagem)
+        kwargs.setdefault("miniatura", foto.miniatura)
+        kwargs.setdefault("largura", foto.largura)
+        kwargs.setdefault("altura", foto.altura)
+        return super()._create(model_class, *args, **kwargs)

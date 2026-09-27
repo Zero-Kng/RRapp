@@ -6,12 +6,14 @@ import { useId, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { api } from "../api/cliente";
-import { aplicarErros, dados, errosDeCampo } from "../api/erros";
+import { aplicarErros, dados, errosDeCampo, mensagemDeErro } from "../api/erros";
+import type { components } from "../api/esquema";
 import { Aviso } from "../componentes/Aviso";
 import { Botao, classeFoco } from "../componentes/Botao";
 import { Campo, classeEntrada } from "../componentes/Campo";
 import { EstrelasNota } from "../componentes/EstrelasNota";
 import { hojeLocal } from "../util/datas";
+import { CampoFotos } from "./CampoFotos";
 
 const LIMITE_CRITICA = 5000;
 
@@ -25,6 +27,24 @@ const esquema = z.object({
   revisita: z.boolean(),
 });
 type Dados = z.infer<typeof esquema>;
+
+/** Envio das fotos depois de criado o registro: uma por vez, guardando as que falharem. */
+type Falha = { foto: File; mensagem: string; podeTentar: boolean };
+type Envio = {
+  registroId: number;
+  total: number;
+  atual: number;
+  falhas: Falha[];
+  enviando: boolean;
+};
+
+/** Recusa do servidor (erro no campo "imagem") não passa tentando de novo; rede, 5xx e 429 podem. */
+function falhaDoEnvio(foto: File, erro: unknown): Falha {
+  const doCampo = errosDeCampo(erro).imagem;
+  return doCampo
+    ? { foto, mensagem: doCampo, podeTentar: false }
+    : { foto, mensagem: mensagemDeErro(erro), podeTentar: true };
+}
 
 type Props = {
   restaurante: { slug: string; nome: string };
@@ -47,6 +67,8 @@ export function RegistrarVisita({ restaurante, aberto, aoMudarAberto }: Props) {
   const [nota, setNota] = useState<number | null>(null);
   const [erroNota, setErroNota] = useState<string | null>(null);
   const [erroGeral, setErroGeral] = useState<string | null>(null);
+  const [fotos, setFotos] = useState<File[]>([]);
+  const [envio, setEnvio] = useState<Envio | null>(null);
   const {
     register,
     handleSubmit,
@@ -63,14 +85,10 @@ export function RegistrarVisita({ restaurante, aberto, aoMudarAberto }: Props) {
           body: { restaurante_slug: restaurante.slug, ...corpo, critica: corpo.critica.trim() },
         }),
       ),
-    onSuccess: () => {
-      void clienteConsultas.invalidateQueries({ queryKey: ["restaurante", restaurante.slug] });
-      void clienteConsultas.invalidateQueries({ queryKey: ["diario"] });
-      void clienteConsultas.invalidateQueries({ queryKey: ["criticas"] });
-      void clienteConsultas.invalidateQueries({ queryKey: ["perfil"] });
-      // O registro tira o restaurante dos desejos (no backend)
-      void clienteConsultas.invalidateQueries({ queryKey: ["desejos"] });
-      fechar();
+    onSuccess: (registro) => {
+      invalidar();
+      if (fotos.length === 0) fechar();
+      else void enviarFotos(registro.id, fotos);
     },
     onError: (erro) => {
       setErroNota(errosDeCampo(erro).nota ?? null);
@@ -82,7 +100,41 @@ export function RegistrarVisita({ restaurante, aberto, aoMudarAberto }: Props) {
     },
   });
 
+  function invalidar() {
+    void clienteConsultas.invalidateQueries({ queryKey: ["restaurante", restaurante.slug] });
+    void clienteConsultas.invalidateQueries({ queryKey: ["diario"] });
+    void clienteConsultas.invalidateQueries({ queryKey: ["criticas"] });
+    void clienteConsultas.invalidateQueries({ queryKey: ["perfil"] });
+    // O registro tira o restaurante dos desejos (no backend)
+    void clienteConsultas.invalidateQueries({ queryKey: ["desejos"] });
+  }
+
+  async function enviarFotos(registroId: number, lista: File[]) {
+    const falhas: Falha[] = [];
+    for (const [indice, foto] of lista.entries()) {
+      setEnvio({ registroId, total: lista.length, atual: indice + 1, falhas: [], enviando: true });
+      const formulario = new FormData();
+      formulario.append("imagem", foto);
+      try {
+        await dados(
+          api.POST("/api/v1/registros/{id}/fotos", {
+            params: { path: { id: registroId } },
+            body: formulario as unknown as components["schemas"]["EnvioFotoRequest"],
+          }),
+        );
+      } catch (erro) {
+        falhas.push(falhaDoEnvio(foto, erro));
+      }
+    }
+    invalidar();
+    if (falhas.length === 0) fechar();
+    else
+      setEnvio({ registroId, total: lista.length, atual: lista.length, falhas, enviando: false });
+  }
+
   function limpar() {
+    setFotos([]);
+    setEnvio(null);
     reset(valoresIniciais());
     setNota(null);
     setErroNota(null);
@@ -105,7 +157,13 @@ export function RegistrarVisita({ restaurante, aberto, aoMudarAberto }: Props) {
   const tamanhoCritica = useWatch({ control, name: "critica" })?.length ?? 0;
 
   return (
-    <Dialog.Root open={aberto} onOpenChange={(abrir) => (abrir ? aoMudarAberto(true) : fechar())}>
+    <Dialog.Root
+      open={aberto}
+      onOpenChange={(abrir) => {
+        if (abrir) aoMudarAberto(true);
+        else if (!envio?.enviando) fechar(); // durante o envio das fotos, o modal fica aberto
+      }}
+    >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px]" />
         <Dialog.Content className="fixed inset-x-0 bottom-0 z-50 max-h-[92dvh] overflow-y-auto rounded-t-2xl border border-borda bg-superficie p-5 shadow-[0_-8px_32px_rgb(0_0_0/0.18)] sm:inset-auto sm:top-1/2 sm:left-1/2 sm:w-full sm:max-w-lg sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-2xl sm:p-6">
@@ -118,17 +176,71 @@ export function RegistrarVisita({ restaurante, aberto, aoMudarAberto }: Props) {
                 {restaurante.nome}
               </Dialog.Description>
             </div>
-            <Dialog.Close
-              aria-label="Fechar"
-              className={`rounded-md p-1 text-texto-secundario hover:text-texto ${classeFoco}`}
-            >
-              <X aria-hidden="true" className="size-5" />
-            </Dialog.Close>
+            {!envio && (
+              <Dialog.Close
+                aria-label="Fechar"
+                className={`rounded-md p-1 text-texto-secundario hover:text-texto ${classeFoco}`}
+              >
+                <X aria-hidden="true" className="size-5" />
+              </Dialog.Close>
+            )}
           </div>
+
+          {envio && (
+            <div className="mt-6 flex flex-col gap-4">
+              {envio.enviando ? (
+                <>
+                  <p role="status" className="text-sm text-texto-secundario">
+                    Enviando fotos… {envio.atual} de {envio.total}
+                  </p>
+                  <div className="h-1.5 overflow-hidden rounded-full bg-borda">
+                    <div
+                      className="h-full rounded-full bg-destaque transition-[width] duration-300"
+                      style={{ width: `${((envio.atual - 1) / envio.total) * 100}%` }}
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Aviso>
+                    <p>
+                      {envio.falhas.length === 1
+                        ? "Não foi possível enviar 1 foto."
+                        : `Não foi possível enviar ${envio.falhas.length} fotos.`}
+                    </p>
+                    {[...new Set(envio.falhas.map((falha) => falha.mensagem))].map((mensagem) => (
+                      <p key={mensagem}>{mensagem}</p>
+                    ))}
+                    <p>A visita já está salva.</p>
+                  </Aviso>
+                  <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                    <Botao variante="secundaria" onClick={fechar}>
+                      Fechar
+                    </Botao>
+                    {envio.falhas.some((falha) => falha.podeTentar) && (
+                      <Botao
+                        onClick={() =>
+                          void enviarFotos(
+                            envio.registroId,
+                            envio.falhas
+                              .filter((falha) => falha.podeTentar)
+                              .map((falha) => falha.foto),
+                          )
+                        }
+                      >
+                        Tentar de novo
+                      </Botao>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
 
           <form
             onSubmit={(evento) => void handleSubmit(enviar)(evento)}
             noValidate
+            hidden={envio !== null}
             className="mt-6 flex flex-col gap-5"
           >
             {erroGeral && <Aviso>{erroGeral}</Aviso>}
@@ -150,6 +262,8 @@ export function RegistrarVisita({ restaurante, aberto, aoMudarAberto }: Props) {
                 </p>
               )}
             </div>
+
+            <CampoFotos fotos={fotos} aoMudar={setFotos} desabilitado={salvar.isPending} />
 
             <Campo
               rotulo="Data da visita"

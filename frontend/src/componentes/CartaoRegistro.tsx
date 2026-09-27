@@ -2,6 +2,7 @@ import { Heart, RotateCcw } from "lucide-react";
 import { Link } from "react-router";
 import type { Registro } from "../api/tipos";
 import { formatarData } from "../util/datas";
+import { MiniaturasFotos } from "../registros/MiniaturasFotos";
 import { Avatar } from "./Avatar";
 import { classeFoco } from "./Botao";
 import { NotaEstrelas } from "./NotaEstrelas";
@@ -61,6 +62,8 @@ export function CartaoRegistro({ registro, mostrar }: Props) {
       {registro.critica && (
         <p className="mt-2 max-w-prose leading-relaxed whitespace-pre-line">{registro.critica}</p>
       )}
+
+      <MiniaturasFotos registro={registro} />
     </article>
   );
 }

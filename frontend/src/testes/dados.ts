@@ -1,6 +1,7 @@
 import type {
   Cidade,
   Desejo,
+  Foto,
   Eu,
   Pagina,
   PerfilPublico,
@@ -57,8 +58,21 @@ export function registro(sobrescrever: Partial<Registro> = {}): Registro {
     critica: "Vista linda.",
     curtiu: true,
     revisita: false,
+    fotos: [],
     criado_em: "2026-09-20T21:00:00-03:00",
     atualizado_em: "2026-09-20T21:00:00-03:00",
+    ...sobrescrever,
+  };
+}
+
+export function foto(sobrescrever: Partial<Foto> = {}): Foto {
+  const id = sobrescrever.id ?? 1;
+  return {
+    id,
+    imagem: `http://localhost:3000/media/fotos/grande-${id}.webp`,
+    miniatura: `http://localhost:3000/media/fotos/mini-${id}.webp`,
+    largura: 1600,
+    altura: 1200,
     ...sobrescrever,
   };
 }

@@ -142,6 +142,7 @@ REST_FRAMEWORK = {
         "cadastro": "3/hour",
         "senha": "5/hour",
         "escrita": "30/min",
+        "fotos": "60/hour",
     },
     # 0 = usa o IP da conexão e ignora X-Forwarded-For (que o cliente pode forjar).
     # Atrás de um proxy confiável, defina NUM_PROXIES=1 no ambiente.
