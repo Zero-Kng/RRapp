@@ -10,6 +10,7 @@ export type RestauranteDetalhe = Esquemas["RestauranteDetalhe"];
 export type BarraHistograma = Esquemas["BarraHistograma"];
 export type MeuRegistro = Esquemas["MeuRegistro"];
 export type Registro = Esquemas["Registro"];
+export type Foto = Esquemas["Foto"];
 export type PerfilPublico = Esquemas["PerfilPublico"];
 export type Desejo = Esquemas["Desejo"];
 
