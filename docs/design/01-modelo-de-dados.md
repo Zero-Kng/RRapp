@@ -96,5 +96,5 @@ Usamos **tabelas explícitas**, e não uma tabela "genérica", porque são mais 
 
 ## Fora do MVP (de propósito)
 
-- Fotos em críticas (custo de armazenamento e de moderação; pode entrar na fase 2)
+- ~~Fotos em críticas~~: antecipadas como fotos nas visitas (até 4 por registro), ver [Seção 11](11-fotos-e-feed.md)
 - Notificações, mensagens diretas, bloqueio de usuários, tags personalizadas
