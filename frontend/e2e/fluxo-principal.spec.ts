@@ -2,6 +2,12 @@
 // O page.evaluate roda no navegador, por isso os tipos do DOM
 import { expect, test } from "@playwright/test";
 
+// PNG 1x1 válido: o servidor confere o conteúdo real da imagem
+const FOTO_PNG = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+  "base64",
+);
+
 test("cadastro, busca, registro de visita e diário", async ({ page }) => {
   const username = `e2e${Date.now().toString(36)}`;
   const senha = "uma-senha-bem-forte-e2e";
@@ -39,12 +45,22 @@ test("cadastro, busca, registro de visita e diário", async ({ page }) => {
   for (let i = 0; i < 7; i++) await nota.press("ArrowRight");
   await expect(nota).toHaveAttribute("aria-valuetext", "3,5 de 5 estrelas");
   await page.getByRole("textbox", { name: "Crítica" }).fill("Teste automatizado.");
+  await page
+    .getByLabel("Fotos (até 4)")
+    .setInputFiles({ name: "prato.png", mimeType: "image/png", buffer: FOTO_PNG });
+  await expect(page.getByRole("button", { name: "Tirar foto 1" })).toBeVisible();
   await page.getByRole("button", { name: "Salvar" }).click();
   await expect(page.getByRole("dialog")).toBeHidden();
 
-  // 5. Diário, e os desejos já vazios
+  // 5. Diário com a foto, e os desejos já vazios
   await page.goto(`/u/${username}`);
   await expect(page.getByRole("link", { name: "Aprazível" })).toBeVisible();
+  await page.getByRole("button", { name: "Ver foto 1 de 1" }).click();
+  const telaCheia = page.getByRole("dialog");
+  await expect(telaCheia.getByRole("img", { name: /Foto 1 de 1 de Aprazível/ })).toBeVisible();
+  await expect(telaCheia.getByRole("button", { name: "Apagar esta foto" })).toBeVisible();
+  await telaCheia.getByRole("button", { name: "Fechar" }).click();
+  await expect(telaCheia).toBeHidden();
   await page.getByRole("tab", { name: "Desejos" }).click();
   await expect(page.getByText(/Você ainda não guardou restaurantes/)).toBeVisible();
 
@@ -61,8 +77,15 @@ test("cadastro, busca, registro de visita e diário", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Desejo" })).toBeVisible();
   await semRolagemLateral();
   await page.goto(`/u/${username}`);
+  await expect(page.getByRole("button", { name: "Ver foto 1 de 1" })).toBeVisible();
+  await semRolagemLateral();
   await page.getByRole("tab", { name: "Desejos" }).click();
   await semRolagemLateral();
+  await page.goto(paginaDoRestaurante);
+  await page.getByRole("button", { name: "Registrar visita" }).click();
+  await expect(page.getByLabel("Fotos (até 4)")).toBeAttached();
+  await semRolagemLateral();
+  await page.keyboard.press("Escape");
   await page.goto("/configuracoes");
   await expect(page.getByRole("button", { name: "Sair da conta" })).toBeVisible();
   await semRolagemLateral();
