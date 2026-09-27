@@ -505,6 +505,66 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Erro'
+  /api/v1/registros/{id}/fotos:
+    post:
+      operationId: registros_fotos_create
+      description: Envia uma foto para uma visita (até 4). Cada envio é uma foto.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - registros
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EnvioFotoRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Foto'
+          description: ''
+        default:
+          description: Erro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+  /api/v1/registros/{id}/fotos/{foto_id}:
+    delete:
+      operationId: registros_fotos_destroy
+      parameters:
+      - in: path
+        name: foto_id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - registros
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+        default:
+          description: Erro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
   /api/v1/restaurantes:
     get:
       operationId: restaurantes_list
@@ -931,6 +991,14 @@ components:
       required:
       - adicionado_em
       - restaurante
+    EnvioFotoRequest:
+      type: object
+      properties:
+        imagem:
+          type: string
+          format: binary
+      required:
+      - imagem
     EsqueciSenhaRequest:
       type: object
       properties:
