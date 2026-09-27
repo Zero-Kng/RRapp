@@ -56,7 +56,7 @@ export function TelaCheiaFotos({ registro, inicial, aberto, aoMudarAberto }: Pro
   return (
     <Dialog.Root open={aberto} onOpenChange={aoMudarAberto}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-40 bg-black/90" />
+        <Dialog.Overlay className="fixed inset-0 z-40 bg-black" />
         <Dialog.Content
           aria-describedby={undefined}
           onKeyDown={aoTeclar}
