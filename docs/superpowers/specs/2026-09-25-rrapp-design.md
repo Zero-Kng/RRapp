@@ -49,7 +49,7 @@ Evoluir para um produto lançado e escalável, com **app mobile** convivendo com
 ### Não-objetivos do MVP
 
 - App mobile nativo
-- Fotos em críticas, notificações, mensagens diretas, bloqueio de usuários, tags
+- Notificações, mensagens diretas, bloqueio de usuários, tags (fotos nas visitas saíram desta lista: ver D26)
 - Login com Google/Apple, confirmação obrigatória de e-mail, 2FA para usuários comuns
 - Cidades além do Rio de Janeiro (o modelo já suporta; só não serão importadas)
 - Monetização
@@ -77,12 +77,17 @@ Evoluir para um produto lançado e escalável, com **app mobile** convivendo com
 | D17 | Visual **moderno e limpo**, temas **claro e escuro** seguindo o sistema | Diário escuro; carioca descontraído | Fácil de usar; o escuro atende quem prefere |
 | D18 | Destaque **azul** com **estrelas douradas** | Coral, verde, âmbar, vinho; tudo azul | Escolha do produto; a nota se destaca de botões e links |
 | D19 | Tipografia **Plus Jakarta Sans** | Inter, DM Sans, Manrope + Lora | Moderna e amigável |
-| D20 | Início da Fase 1: **busca + suas últimas visitas** | Mais bem avaliados; só busca | Funciona com a API existente e não fica vazio |
+| D20 | Início da Fase 1: **busca + suas últimas visitas** (substituída por D27: busca + feed) | Mais bem avaliados; só busca | Funciona com a API existente e não fica vazio |
 | D21 | Dev com **proxy do Vite** (mesma origem); tipos via **openapi-typescript/openapi-fetch**; **Radix UI** | CORS entre portas; tipos à mão | Cookies/CSRF iguais à produção; tipos sempre em dia; acessibilidade pronta |
 | D22 | Fase 2 entregue em **fatias por funcionalidade** (Desejos → Favoritos → Listas), cada uma com backend, frontend e PR próprios | Backend e depois frontend (como a Fase 1); tudo num PR | Cada fatia já é utilizável; PRs pequenos e revisáveis |
 | D23 | Navegação inferior com **Início, Buscar, Listas, Perfil** | 5 itens com "+ Registrar"; manter 3 | Listas a um toque; registrar já é fácil pela página do restaurante |
 | D24 | Reordenar listas **arrastando (dnd-kit), com setas ↑↓ de reserva** | Só setas; campo de posição | Natural no celular, sem excluir quem não consegue arrastar |
 | D25 | **Slug da lista fixo** após a criação; restaurantes identificados por **slug** na API da Fase 2 | Slug que acompanha o título; ids | Links compartilhados não quebram; mesmo padrão do registro de visita |
+| D26 | **Fotos nas visitas** (até 4 por registro) antes das fatias 2 e 3 da Fase 2 | Manter fora do MVP; depois da Fase 2 | Pedido do produto; o tratamento seguro do avatar já existe e é reaproveitado |
+| D27 | **Feed da comunidade** no Início (registros com foto ou crítica de todos), antes da Fase 3; o feed "de quem eu sigo" continua na Fase 3 | Esperar o "seguir"; só registros com foto | Funciona sem seguidores e mostra o app vivo com poucos usuários |
+| D28 | Visual do feed **"pôster"**: foto grande com restaurante e estrelas por cima (Instagram + Letterboxd); sem foto, a **crítica vira o pôster** sobre o azul | Ficha com a foto embaixo; miniatura ao lado | Escolha do produto nos mockups |
+| D29 | Upload **pelo Django, uma foto por requisição**, regravada em WebP (sem EXIF/GPS) em duas versões | Upload direto ao R2; fotos junto com o registro | Reaproveita o processo do avatar; erro por foto; limpeza de EXIF garantida |
+| D30 | Moderação de fotos nesta entrega: **o dono apaga e o Admin remove**; "Denunciar" continua na Fase 4 | Trazer as denúncias agora | Suficiente enquanto o app é usado por amigos |
 
 ## 4. Arquitetura
 
@@ -147,7 +152,7 @@ Evoluir para um produto lançado e escalável, com **app mobile** convivendo com
 
 > Detalhes: [03-funcionalidades-e-fluxos.md](../../design/03-funcionalidades-e-fluxos.md)
 
-- **Início**: feed de quem o usuário segue; para novos usuários, populares da semana e sugestões de quem seguir.
+- **Início**: busca + **feed da comunidade** (D27; [Seção 11](../../design/11-fotos-e-feed.md)); na Fase 3 ganha a aba "de quem eu sigo" e, para novos usuários, populares da semana e sugestões de quem seguir.
 - **Buscar**: por nome, com filtros de bairro, categoria, preço e nota mínima, mais "Sugerir restaurante".
 - **Restaurante**: dados, nota média, histograma, "amigos que foram", críticas populares e ações (registrar, desejo, lista, fechou).
 - **Registrar visita**: modal rápido com data, nota, ♥, crítica e revisita.
@@ -194,6 +199,15 @@ Evoluir para um produto lançado e escalável, com **app mobile** convivendo com
 - Lista privada responde 404 a terceiros; limites de 100 itens por lista e 100 listas por usuário.
 - Curtir e comentar listas e "Listas populares" ficam para as Fases 3 e 4.
 
+## 10.3 Fotos no registro e feed da comunidade
+
+> Detalhes: [11-fotos-e-feed.md](../../design/11-fotos-e-feed.md)
+
+- Até 4 fotos por visita (JPG, PNG, WebP, HEIC; até 10 MB), regravadas em WebP sem EXIF/GPS, em versão grande (1.600 px) e miniatura (480 px).
+- `POST`/`DELETE /registros/{id}/fotos`; os registros passam a trazer `fotos`; `GET /feed` com cursor.
+- Início com busca + feed da comunidade em estilo "pôster"; sem foto, a crítica vira o pôster.
+- Entregue em duas fatias (fotos, depois feed), antes das fatias 2 e 3 da Fase 2.
+
 ## 11. Autenticação e erros
 
 > Detalhes: [06-autenticacao-e-erros.md](../../design/06-autenticacao-e-erros.md)
@@ -235,7 +249,7 @@ Evoluir para um produto lançado e escalável, com **app mobile** convivendo com
 |---|---|---|
 | **0** | Teste da base FSQ Open Source Places e importação do Rio | Base de restaurantes pronta |
 | **1** | Cadastro/login, busca, página do restaurante, registrar visita com nota, perfil básico com diário | Usável sozinho, como diário |
-| **2** | Desejos, listas, favoritos | Organização pessoal completa |
+| **2** | Desejos, listas, favoritos (e, antecipados, fotos nas visitas e feed da comunidade: D26–D27) | Organização pessoal completa |
 | **3** | Seguir, feed, curtidas, comentários | Vira rede social |
 | **4** | Sugerir/fechado, denúncias, populares, histograma, exportar dados, polimento | Pronto para convidar testadores |
 
