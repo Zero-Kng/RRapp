@@ -2,7 +2,7 @@ from io import BytesIO
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
-from PIL import Image
+from PIL import Image, JpegImagePlugin
 from pillow_heif import register_heif_opener
 from rest_framework import serializers
 
@@ -96,3 +96,53 @@ def test_formato_nao_aceito(conteudo):
         processar_foto(enviado)
 
     assert mensagem(erro) == "Envie uma imagem JPG, PNG, WebP ou HEIC."
+
+
+def jpeg_com_imagens_embutidas() -> SimpleUploadedFile:
+    """JPEG com um 2º quadro no bloco MPF (ex.: iPhone com mapa de HDR): o Pillow o chama de MPO."""
+    buffer = BytesIO()
+    principal = Image.new("RGB", (1200, 900), "orange")
+    principal.save(
+        buffer, format="MPO", save_all=True, append_images=[Image.new("RGB", (300, 225))]
+    )
+    return SimpleUploadedFile("IMG_0001.JPG", buffer.getvalue())
+
+
+def test_jpeg_com_imagens_embutidas_e_aceito():
+    foto = processar_foto(jpeg_com_imagens_embutidas())
+
+    assert (foto.largura, foto.altura) == (1200, 900)
+
+
+def test_jpeg_grande_e_decodificado_ja_reduzido(monkeypatch):
+    # Decodificar 40 MP inteiros e copiar várias vezes passa de 400 MB de memória;
+    # o JPEG é decodificado já perto de 1.600 px (draft)
+    pedidos = []
+    original = JpegImagePlugin.JpegImageFile.draft  # o JPEG (e o MPO) tem o próprio draft
+
+    def espiar(imagem, modo, tamanho):
+        pedidos.append((modo, tamanho))
+        return original(imagem, modo, tamanho)
+
+    monkeypatch.setattr(JpegImagePlugin.JpegImageFile, "draft", espiar)
+
+    foto = processar_foto(arquivo("JPEG", (6400, 4800)))
+
+    # O 1º pedido é o que vale (antes de decodificar); o thumbnail do Pillow chama outros depois
+    assert pedidos[0] == ("RGB", (1600, 1600))
+    assert (foto.largura, foto.altura) == (1600, 1200)
+
+
+def test_miniatura_sai_da_versao_grande_sem_copiar_o_original(monkeypatch):
+    tamanhos_copiados = []
+    original = Image.Image.copy
+
+    def espiar(imagem):
+        tamanhos_copiados.append(imagem.size)
+        return original(imagem)
+
+    monkeypatch.setattr(Image.Image, "copy", espiar)
+
+    processar_foto(arquivo("PNG", (3200, 2400)))
+
+    assert all(max(tamanho) <= 1600 for tamanho in tamanhos_copiados)

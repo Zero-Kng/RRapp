@@ -1,9 +1,12 @@
+import threading
 from io import BytesIO
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db import connection
 from PIL import Image
 
+import registros.views_fotos as views_fotos
 from config.api import ThrottleEscrita
 from factories import FotoRegistroFactory, RegistroFactory, UsuarioFactory
 from registros.models import FotoRegistro
@@ -147,3 +150,39 @@ def test_registro_so_com_foto_aparece_no_restaurante_e_nao_nas_criticas(api, mid
 
     assert [r["id"] for r in restaurante.json()["results"]] == [registro.id]
     assert registro.id not in [r["id"] for r in criticas.json()["results"]]
+
+
+@pytest.mark.django_db(transaction=True)
+def test_dois_envios_simultaneos_nao_passam_de_4_fotos(midia_temporaria, monkeypatch):
+    from rest_framework.test import APIClient
+
+    dono = UsuarioFactory()
+    registro = RegistroFactory(usuario=dono)
+    for _ in range(3):
+        FotoRegistroFactory(registro=registro)
+    # Os dois envios terminam de processar a imagem juntos, antes de gravar
+    barreira = threading.Barrier(2)
+    original = views_fotos.processar_foto
+
+    def processar_junto(arquivo):
+        foto = original(arquivo)
+        barreira.wait(timeout=10)
+        return foto
+
+    monkeypatch.setattr(views_fotos, "processar_foto", processar_junto)
+    codigos = []
+
+    def enviar_em_paralelo():
+        cliente = APIClient()
+        cliente.force_authenticate(dono)
+        codigos.append(enviar(cliente, registro, arquivo((64, 48))).status_code)
+        connection.close()
+
+    threads = [threading.Thread(target=enviar_em_paralelo) for _ in range(2)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+    assert sorted(codigos) == [201, 400]
+    assert FotoRegistro.objects.filter(registro=registro).count() == 4

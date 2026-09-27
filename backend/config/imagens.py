@@ -11,6 +11,8 @@ from rest_framework import serializers
 register_heif_opener()  # o Pillow passa a abrir HEIC/HEIF (fotos de iPhone)
 
 MENSAGEM_DIMENSOES = "A imagem é grande demais (dimensões)."
+# JPEG com imagens embutidas no bloco MPF (ex.: iPhone com mapa de HDR) o Pillow chama de MPO
+FORMATOS_JPEG = {"JPEG", "MPO"}
 
 
 def abrir_imagem(
@@ -21,8 +23,13 @@ def abrir_imagem(
     formatos: set[str],
     mensagem_formato: str,
     mensagem_tamanho: str,
+    reduzir_para: int | None = None,
 ) -> Image.Image:
-    """Abre e confere a imagem; devolve-a "de pé" (orientação do EXIF aplicada), em RGB/RGBA."""
+    """Abre e confere a imagem; devolve-a "de pé" (orientação do EXIF aplicada), em RGB/RGBA.
+
+    Com `reduzir_para`, um JPEG já é decodificado perto desse lado (draft): uma foto de 40 MP
+    não ocupa centenas de MB de memória só para virar 1.600 px.
+    """
     if arquivo.size > tamanho_maximo:
         raise serializers.ValidationError(mensagem_tamanho)
     try:
@@ -31,6 +38,8 @@ def abrir_imagem(
         largura, altura = imagem.size
         # Só decodifica depois de conferir formato e dimensões: evita "bombas de descompressão"
         if formato in formatos and largura * altura <= pixels_maximos:
+            if reduzir_para and formato in FORMATOS_JPEG:
+                imagem.draft("RGB", (reduzir_para, reduzir_para))
             imagem.load()
     except (UnidentifiedImageError, OSError, Image.DecompressionBombError) as erro:
         raise serializers.ValidationError(mensagem_formato) from erro
@@ -39,16 +48,16 @@ def abrir_imagem(
     if largura * altura > pixels_maximos:
         raise serializers.ValidationError(MENSAGEM_DIMENSOES)
 
-    imagem = ImageOps.exif_transpose(imagem)
+    ImageOps.exif_transpose(imagem, in_place=True)
     if imagem.mode not in ("RGB", "RGBA"):
         imagem = imagem.convert("RGBA")
     return imagem
 
 
 def regravar_webp(imagem: Image.Image, lado_maximo: int) -> ContentFile:
-    """Cópia reduzida (nunca ampliada), regravada em WebP do zero: sem EXIF, nome aleatório."""
-    copia = imagem.copy()
-    copia.thumbnail((lado_maximo, lado_maximo))
+    """Reduz a PRÓPRIA imagem (nunca amplia) e a regrava em WebP do zero: sem EXIF, nome
+    aleatório. Reduzir no lugar evita copiar a imagem original, que pode ser enorme."""
+    imagem.thumbnail((lado_maximo, lado_maximo))
     saida = BytesIO()
-    copia.save(saida, format="WEBP", quality=85)
+    imagem.save(saida, format="WEBP", quality=85)
     return ContentFile(saida.getvalue(), name=f"{uuid4().hex}.webp")
