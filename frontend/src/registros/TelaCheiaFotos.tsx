@@ -40,7 +40,7 @@ export function TelaCheiaFotos({ registro, inicial, aberto, aoMudarAberto }: Pro
         }),
       ),
     onSuccess: () => {
-      for (const chave of ["diario", "criticas", "restaurante", "perfil"]) {
+      for (const chave of ["diario", "criticas", "restaurante", "perfil", "feed"]) {
         void clienteConsultas.invalidateQueries({ queryKey: [chave] });
       }
       setParaApagar(null);

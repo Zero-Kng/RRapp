@@ -4,6 +4,7 @@ import type {
   Foto,
   Eu,
   Pagina,
+  PaginaDoFeed,
   PerfilPublico,
   Registro,
   RestauranteDetalhe,
@@ -93,4 +94,8 @@ export const perfilAna: PerfilPublico = {
 
 export function pagina<T>(resultados: T[], extras: Partial<Pagina<T>> = {}): Pagina<T> {
   return { count: resultados.length, next: null, previous: null, results: resultados, ...extras };
+}
+
+export function paginaDoFeed(resultados: Registro[], next: string | null = null): PaginaDoFeed {
+  return { next, previous: null, results: resultados };
 }

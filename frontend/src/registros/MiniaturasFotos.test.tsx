@@ -104,3 +104,16 @@ test("com a confirmação aberta, as setas não trocam a foto que será apagada"
 
   await waitFor(() => expect(apagadas).toEqual(["7/2"]));
 });
+
+test("apagar uma foto manda recarregar o feed", async () => {
+  responder([comDuasFotos]);
+  const { evento, clienteConsultas } = abrir(eu);
+  clienteConsultas.setQueryData(["feed"], { pages: [], pageParams: [] });
+
+  await evento.click(await screen.findByRole("button", { name: "Ver foto 1 de 2" }));
+  await evento.click(await screen.findByRole("button", { name: "Apagar esta foto" }));
+  await evento.click(await screen.findByRole("button", { name: "Apagar" }));
+
+  await waitFor(() => expect(apagadas).toEqual(["7/1"]));
+  expect(clienteConsultas.getQueryState(["feed"])?.isInvalidated).toBe(true);
+});
