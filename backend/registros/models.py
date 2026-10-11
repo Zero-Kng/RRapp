@@ -30,6 +30,7 @@ class Registro(models.Model):
     class Meta:
         ordering = ["-data_visita", "-criado_em"]
         indexes = [
+            models.Index(fields=["-criado_em", "-id"], name="registro_criado"),
             models.Index(
                 fields=["restaurante", "usuario", "-data_visita"], name="registro_rest_usuario_data"
             ),

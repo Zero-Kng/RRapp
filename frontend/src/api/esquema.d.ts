@@ -232,6 +232,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/feed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Feed da comunidade: as visitas mais recentes de todo mundo com crítica ou foto. */
+        get: operations["feed_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/registros": {
         parameters: {
             query?: never;
@@ -492,6 +509,29 @@ export interface components {
             readonly largura: number;
             readonly altura: number;
         };
+        /**
+         * @description O mesmo registro, com outro nome no esquema: a página por cursor do feed não tem
+         *     `count`, e assim não colide com a `PaginatedRegistroList` (por número de página).
+         */
+        ItemDoFeed: {
+            readonly id: number;
+            readonly restaurante: components["schemas"]["RestauranteResumo"];
+            readonly usuario: components["schemas"]["UsuarioResumo"];
+            /**
+             * Data da visita
+             * Format: date
+             */
+            data_visita: string;
+            nota: number | null;
+            critica: string;
+            curtiu: boolean;
+            revisita: boolean;
+            readonly fotos: components["schemas"]["Foto"][];
+            /** Format: date-time */
+            readonly criado_em: string;
+            /** Format: date-time */
+            readonly atualizado_em: string;
+        };
         LoginRequest: {
             login: string;
             senha: string;
@@ -527,6 +567,19 @@ export interface components {
              */
             previous: string | null;
             results: components["schemas"]["Desejo"][];
+        };
+        PaginatedItemDoFeedList: {
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?cursor=cD00ODY%3D"
+             */
+            next: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+             */
+            previous: string | null;
+            results: components["schemas"]["ItemDoFeed"][];
         };
         PaginatedRegistroList: {
             /** @example 123 */
@@ -1180,6 +1233,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Acesso"];
+                };
+            };
+            /** @description Erro */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Erro"];
+                };
+            };
+        };
+    };
+    feed_list: {
+        parameters: {
+            query?: {
+                /** @description O valor do cursor de paginação. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedItemDoFeedList"];
                 };
             };
             /** @description Erro */
