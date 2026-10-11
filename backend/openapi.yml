@@ -395,6 +395,36 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Erro'
+  /api/v1/feed:
+    get:
+      operationId: feed_list
+      description: 'Feed da comunidade: as visitas mais recentes de todo mundo com
+        crítica ou foto.'
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: O valor do cursor de paginação.
+        schema:
+          type: string
+      tags:
+      - feed
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedItemDoFeedList'
+          description: ''
+        default:
+          description: Erro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
   /api/v1/registros:
     post:
       operationId: registros_create
@@ -1076,6 +1106,65 @@ components:
       - imagem
       - largura
       - miniatura
+    ItemDoFeed:
+      type: object
+      description: |-
+        O mesmo registro, com outro nome no esquema: a página por cursor do feed não tem
+        `count`, e assim não colide com a `PaginatedRegistroList` (por número de página).
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        restaurante:
+          allOf:
+          - $ref: '#/components/schemas/RestauranteResumo'
+          readOnly: true
+        usuario:
+          allOf:
+          - $ref: '#/components/schemas/UsuarioResumo'
+          readOnly: true
+        data_visita:
+          type: string
+          format: date
+          title: Data da visita
+        nota:
+          type: number
+          minimum: 0
+          maximum: 5
+          multipleOf: 0.5
+          nullable: true
+        critica:
+          type: string
+          maxLength: 5000
+        curtiu:
+          type: boolean
+        revisita:
+          type: boolean
+        fotos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Foto'
+          readOnly: true
+        criado_em:
+          type: string
+          format: date-time
+          readOnly: true
+        atualizado_em:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - atualizado_em
+      - criado_em
+      - critica
+      - curtiu
+      - data_visita
+      - fotos
+      - id
+      - nota
+      - restaurante
+      - revisita
+      - usuario
     LoginRequest:
       type: object
       properties:
@@ -1155,6 +1244,27 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Desejo'
+    PaginatedItemDoFeedList:
+      type: object
+      required:
+      - next
+      - previous
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemDoFeed'
     PaginatedRegistroList:
       type: object
       required:

@@ -20,3 +20,6 @@ export type Pagina<T> = {
   previous: string | null;
   results: T[];
 };
+
+/** Página do feed, por cursor (sem `count`); os itens têm os mesmos campos de `Registro`. */
+export type PaginaDoFeed = Esquemas["PaginatedItemDoFeedList"];

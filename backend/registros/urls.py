@@ -3,6 +3,7 @@ from django.urls import path
 from registros import views, views_fotos
 
 urlpatterns = [
+    path("feed", views.FeedView.as_view(), name="feed"),
     path("registros", views.CriarRegistroView.as_view(), name="criar-registro"),
     path("registros/<int:pk>", views.RegistroView.as_view(), name="registro"),
     path(

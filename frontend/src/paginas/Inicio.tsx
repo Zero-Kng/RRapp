@@ -1,66 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router";
-import { api } from "../api/cliente";
-import { dados, mensagemDeErro } from "../api/erros";
-import { Aviso } from "../componentes/Aviso";
 import { Botao, classeFoco } from "../componentes/Botao";
 import { classeEntrada } from "../componentes/Campo";
-import { Carregando } from "../componentes/Carregando";
-import { CartaoRegistro } from "../componentes/CartaoRegistro";
+import { FeedComunidade } from "../feed/FeedComunidade";
 import { useSessao } from "../sessao/contexto";
 import { useTitulo } from "../util/titulo";
-
-const VISITAS_NA_INICIAL = 5;
-
-function UltimasVisitas({ username }: { username: string }) {
-  // A mesma chave da 1ª página do diário no perfil: um cache serve às duas telas
-  const consulta = useQuery({
-    queryKey: ["diario", username, 1],
-    queryFn: () =>
-      dados(
-        api.GET("/api/v1/usuarios/{username}/diario", {
-          params: { path: { username }, query: { page: 1 } },
-        }),
-      ),
-  });
-
-  return (
-    <section aria-labelledby="titulo-ultimas" className="mt-12">
-      <div className="flex items-baseline justify-between gap-4">
-        <h2 id="titulo-ultimas" className="text-lg font-bold">
-          Suas últimas visitas
-        </h2>
-        {consulta.data && consulta.data.results.length > 0 && (
-          <Link
-            to={`/u/${username}`}
-            className={`rounded-md text-sm font-semibold text-destaque hover:underline ${classeFoco}`}
-          >
-            Ver diário completo
-          </Link>
-        )}
-      </div>
-      {consulta.isPending ? (
-        <Carregando />
-      ) : consulta.isError ? (
-        <div className="mt-4">
-          <Aviso>{mensagemDeErro(consulta.error)}</Aviso>
-        </div>
-      ) : consulta.data.results.length === 0 ? (
-        <p className="py-10 text-center text-texto-secundario">
-          Você ainda não registrou visitas. Busque um restaurante e registre a primeira.
-        </p>
-      ) : (
-        <div className="mt-2 divide-y divide-borda">
-          {consulta.data.results.slice(0, VISITAS_NA_INICIAL).map((item) => (
-            <CartaoRegistro key={item.id} registro={item} mostrar="restaurante" />
-          ))}
-        </div>
-      )}
-    </section>
-  );
-}
 
 function Apresentacao() {
   return (
@@ -130,7 +75,8 @@ export function Inicio() {
         <Botao type="submit">Buscar</Botao>
       </form>
 
-      {usuario ? <UltimasVisitas username={usuario.username} /> : <Apresentacao />}
+      {!usuario && <Apresentacao />}
+      <FeedComunidade />
     </div>
   );
 }

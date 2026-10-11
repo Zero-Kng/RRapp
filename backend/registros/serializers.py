@@ -1,6 +1,7 @@
 import datetime
 
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema_serializer
 from rest_framework import serializers
 
 from contas.serializers import UsuarioResumoSerializer
@@ -79,3 +80,9 @@ class RegistroSerializer(serializers.ModelSerializer):
                 {"restaurante_slug": "Não é possível trocar o restaurante de um registro."}
             )
         return dados
+
+
+@extend_schema_serializer(component_name="ItemDoFeed")
+class ItemDoFeedSerializer(RegistroSerializer):
+    """O mesmo registro, com outro nome no esquema: a página por cursor do feed não tem
+    `count`, e assim não colide com a `PaginatedRegistroList` (por número de página)."""

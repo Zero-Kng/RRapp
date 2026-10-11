@@ -56,6 +56,8 @@
   --color-destaque: var(--cor-destaque);
   --color-sobre-destaque: var(--cor-sobre-destaque);
   --color-estrela: var(--cor-estrela);
+  /* Estrelas sobre fundo escuro (foto ou pôster azul), igual nos dois temas */
+  --color-estrela-clara: #f5b83d;
   --color-erro: var(--cor-erro);
   --color-sucesso: var(--cor-sucesso);
 }

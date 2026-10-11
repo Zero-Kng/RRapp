@@ -1,4 +1,3 @@
-from django.db.models import Exists, OuterRef, Q
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics, serializers
@@ -15,9 +14,8 @@ from lugares.serializers import (
     RestauranteDetalheSerializer,
     RestauranteResumoSerializer,
 )
-from registros.models import FotoRegistro
 from registros.serializers import RegistroSerializer
-from registros.views import registros_com_relacoes
+from registros.views import com_critica_ou_foto, registros_com_relacoes
 
 
 class CidadesView(generics.ListAPIView):
@@ -87,9 +85,7 @@ class RegistrosDoRestauranteView(generics.ListAPIView):
     def get_queryset(self):
         restaurante = get_object_or_404(restaurantes_visiveis(), slug=self.kwargs["slug"])
         return (
-            registros_com_relacoes()
+            com_critica_ou_foto(registros_com_relacoes())
             .filter(restaurante=restaurante)
-            # Com crítica ou com pelo menos uma foto
-            .filter(~Q(critica="") | Exists(FotoRegistro.objects.filter(registro=OuterRef("pk"))))
             .order_by("-criado_em", "-id")
         )

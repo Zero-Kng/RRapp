@@ -341,3 +341,14 @@ test("foto recusada pelo servidor mostra o motivo e não oferece tentar de novo"
   expect(screen.queryByRole("button", { name: "Tentar de novo" })).not.toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Fechar" })).toBeVisible();
 });
+
+test("salvar a visita manda recarregar o feed", async () => {
+  aceitarRegistro();
+  const { evento, clienteConsultas } = abrir();
+  clienteConsultas.setQueryData(["feed"], { pages: [], pageParams: [] });
+
+  await evento.click(screen.getByRole("button", { name: "Salvar" }));
+
+  expect(await screen.findByText("fechado")).toBeInTheDocument();
+  expect(clienteConsultas.getQueryState(["feed"])?.isInvalidated).toBe(true);
+});
