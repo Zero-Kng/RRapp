@@ -7,10 +7,12 @@ type Props = {
   registro: Registro;
   /** Sobreposição desenhada por cima das fotos (o degradê com o restaurante). */
   children?: ReactNode;
+  /** Só os primeiros itens do feed baixam a 1ª foto na hora; o resto espera a rolagem. */
+  prioritaria?: boolean;
 };
 
 /** Fotos de um registro na largura toda, deslizando para o lado; tocar abre a tela cheia. */
-export function CarrosselFotos({ registro, children }: Props) {
+export function CarrosselFotos({ registro, children, prioritaria = false }: Props) {
   const [atual, setAtual] = useState(0);
   const [aberta, setAberta] = useState<number | null>(null);
   const { fotos } = registro;
@@ -47,7 +49,7 @@ export function CarrosselFotos({ registro, children }: Props) {
               alt=""
               width={foto.largura}
               height={foto.altura}
-              loading={indice === 0 ? undefined : "lazy"}
+              loading={indice === 0 && prioritaria ? undefined : "lazy"}
               className="size-full object-cover"
             />
           </button>

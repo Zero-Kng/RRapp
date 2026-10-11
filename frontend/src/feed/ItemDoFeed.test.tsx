@@ -103,3 +103,16 @@ test("hora da postagem no topo", () => {
   expect(hora.tagName).toBe("TIME");
   expect(hora).toHaveAttribute("dateTime", item.criado_em);
 });
+
+test("só os itens do topo baixam a 1ª foto na hora; os outros esperam a rolagem", () => {
+  const item = registro({ fotos: [foto({ id: 1 }), foto({ id: 2 })] });
+  const atrasos = (elemento: HTMLElement) =>
+    Array.from(elemento.querySelectorAll("img"), (img) => img.getAttribute("loading"));
+
+  const comum = renderizar(<ItemDoFeed item={item} />);
+  expect(atrasos(comum.container)).toEqual(["lazy", "lazy"]);
+  comum.unmount();
+
+  const prioritario = renderizar(<ItemDoFeed item={item} prioritaria />);
+  expect(atrasos(prioritario.container)).toEqual([null, "lazy"]);
+});

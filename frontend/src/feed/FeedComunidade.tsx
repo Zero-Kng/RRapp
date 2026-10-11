@@ -21,13 +21,15 @@ export function FeedComunidade() {
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (pagina) => cursorDe(pagina.next),
   });
-  const { hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage } = consulta;
+  const { hasNextPage, isFetching, isFetchingNextPage, isFetchNextPageError, fetchNextPage } =
+    consulta;
   const marcador = useRef<HTMLDivElement>(null);
 
-  // Perto do fim, a próxima página vem sozinha; depois de um erro, só pelo botão
+  // Perto do fim, a próxima página vem sozinha; depois de um erro, só pelo botão. Nunca durante
+  // uma atualização (ex.: depois de apagar uma foto): pedir a próxima página a cancelaria
   useEffect(() => {
     const elemento = marcador.current;
-    if (!elemento || !hasNextPage || isFetchingNextPage || isFetchNextPageError) return;
+    if (!elemento || !hasNextPage || isFetching || isFetchNextPageError) return;
     if (typeof IntersectionObserver === "undefined") return;
     const observador = new IntersectionObserver(
       (entradas) => {
@@ -37,7 +39,7 @@ export function FeedComunidade() {
     );
     observador.observe(elemento);
     return () => observador.disconnect();
-  }, [hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage]);
+  }, [hasNextPage, isFetching, isFetchNextPageError, fetchNextPage]);
 
   const itens = consulta.data?.pages.flatMap((pagina) => pagina.results) ?? [];
 
@@ -59,8 +61,8 @@ export function FeedComunidade() {
       ) : (
         <>
           <div className="mt-4 flex flex-col gap-3">
-            {itens.map((item) => (
-              <ItemDoFeed key={item.id} item={item} />
+            {itens.map((item, indice) => (
+              <ItemDoFeed key={item.id} item={item} prioritaria={indice < 2} />
             ))}
           </div>
           {hasNextPage && (
@@ -72,7 +74,7 @@ export function FeedComunidade() {
               )}
               <Botao
                 variante="secundaria"
-                disabled={isFetchingNextPage}
+                disabled={isFetching}
                 onClick={() => void fetchNextPage()}
               >
                 {isFetchingNextPage ? "Carregando…" : "Carregar mais"}

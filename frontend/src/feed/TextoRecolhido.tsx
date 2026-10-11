@@ -17,9 +17,21 @@ export function TextoRecolhido({ texto, linhas, className = "", classeBotao = ""
   const [aberto, setAberto] = useState(false);
   const [transborda, setTransborda] = useState(false);
 
+  // Mede de novo quando a largura muda (girar a tela) e quando a fonte do app chega (é mais
+  // larga que a de reserva): sem isso, um texto cortado podia ficar sem "ver mais"
   useLayoutEffect(() => {
     const elemento = paragrafo.current;
-    if (elemento) setTransborda(elemento.scrollHeight > elemento.clientHeight + 1);
+    if (!elemento) return;
+    const medir = () => setTransborda(elemento.scrollHeight > elemento.clientHeight + 1);
+    medir();
+    let montado = true;
+    if ("fonts" in document) void document.fonts.ready.then(() => montado && medir());
+    const observador = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(medir);
+    observador?.observe(elemento);
+    return () => {
+      montado = false;
+      observador?.disconnect();
+    };
   }, [texto, linhas]);
 
   return (

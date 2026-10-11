@@ -161,3 +161,47 @@ test("chegar perto do fim carrega a próxima página", async () => {
   await waitFor(() => expect(within(secao).getAllByRole("article")).toHaveLength(21));
   expect(cursores).toEqual([null, "abc"]);
 });
+
+test("chegar ao fim durante a atualização do feed não descarta a atualização", async () => {
+  let avisar: IntersectionObserverCallback = () => {};
+  vi.stubGlobal(
+    "IntersectionObserver",
+    class {
+      constructor(callback: IntersectionObserverCallback) {
+        avisar = callback;
+      }
+      observe() {}
+      disconnect() {
+        avisar = () => {};
+      }
+    },
+  );
+  let liberar: () => void = () => {};
+  const atualizacaoLiberada = new Promise<void>((resolver) => (liberar = resolver));
+  let primeirasPaginas = 0;
+  servidor.use(
+    http.get("*/api/v1/feed", async ({ request }) => {
+      if (new URL(request.url).searchParams.get("cursor")) {
+        return HttpResponse.json(paginaDoFeed(itens(1, 21)));
+      }
+      primeirasPaginas += 1;
+      if (primeirasPaginas === 1) return HttpResponse.json(paginaDoFeed(itens(20), PROXIMA));
+      await atualizacaoLiberada; // a atualização demora a chegar
+      const nova = registro({ id: 99, fotos: [], critica: "Acabou de chegar" });
+      return HttpResponse.json(paginaDoFeed([nova, ...itens(19)], PROXIMA));
+    }),
+  );
+  const { clienteConsultas } = renderizar();
+  const secao = await feed();
+  await within(secao).findAllByRole("article");
+
+  void clienteConsultas.invalidateQueries({ queryKey: ["feed"] }); // ex.: apagou uma foto
+  await waitFor(() => expect(primeirasPaginas).toBe(2));
+  await waitFor(() =>
+    expect(within(secao).getByRole("button", { name: "Carregar mais" })).toBeDisabled(),
+  );
+  avisar([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver);
+  liberar();
+
+  expect(await within(secao).findByText("“Acabou de chegar”")).toBeVisible();
+});

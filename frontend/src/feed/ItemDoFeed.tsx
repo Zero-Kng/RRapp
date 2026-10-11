@@ -35,7 +35,13 @@ function FichaSobreEscuro({ registro }: { registro: Registro }) {
 }
 
 /** Item do feed: foto como pôster (estilo Instagram) com a ficha do restaurante (Letterboxd). */
-export function ItemDoFeed({ item }: { item: Registro }) {
+export function ItemDoFeed({
+  item,
+  prioritaria = false,
+}: {
+  item: Registro;
+  prioritaria?: boolean;
+}) {
   const { usuario } = item;
 
   return (
@@ -58,8 +64,8 @@ export function ItemDoFeed({ item }: { item: Registro }) {
 
       {item.fotos.length > 0 ? (
         <>
-          <CarrosselFotos registro={item}>
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/75 to-transparent px-4 pt-12 pb-3 text-white">
+          <CarrosselFotos registro={item} prioritaria={prioritaria}>
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/85 via-black/60 via-55% to-transparent px-4 pt-12 pb-3 text-white [text-shadow:0_1px_3px_rgb(0_0_0/0.6)]">
               <FichaSobreEscuro registro={item} />
             </div>
           </CarrosselFotos>
