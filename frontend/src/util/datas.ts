@@ -23,3 +23,25 @@ export function formatarData(iso: string): string {
 export function mesDoAno(iso: string): string {
   return lerData(iso).toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
 }
+
+const MINUTO = 60 * 1000;
+const HORA = 60 * MINUTO;
+
+function diasDeCalendario(de: Date, ate: Date): number {
+  const meiaNoite = (data: Date) =>
+    new Date(data.getFullYear(), data.getMonth(), data.getDate()).getTime();
+  return Math.round((meiaNoite(ate) - meiaNoite(de)) / (24 * HORA));
+}
+
+/** Há quanto tempo algo foi postado: "agora", "há 5 min", "há 2 h", "ontem", "há 3 dias" ou a data. */
+export function tempoDesde(iso: string, agora: Date = new Date()): string {
+  const momento = new Date(iso);
+  const passado = agora.getTime() - momento.getTime();
+  if (passado < MINUTO) return "agora";
+  if (passado < HORA) return `há ${Math.floor(passado / MINUTO)} min`;
+  if (passado < 24 * HORA) return `há ${Math.floor(passado / HORA)} h`;
+  const dias = diasDeCalendario(momento, agora);
+  if (dias <= 1) return "ontem";
+  if (dias < 7) return `há ${dias} dias`;
+  return formatarData(iso);
+}

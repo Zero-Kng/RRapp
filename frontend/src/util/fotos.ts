@@ -1,3 +1,5 @@
+import type { Foto } from "../api/tipos";
+
 // Os mesmos limites que o backend aplica às fotos das visitas
 export const TAMANHO_MAXIMO_FOTO = 10 * 1024 * 1024;
 export const MAXIMO_FOTOS = 4;
@@ -25,4 +27,12 @@ export function validarFoto(arquivo: File): string | null {
   if (!tipoAceito) return "Envie uma imagem JPG, PNG, WebP ou HEIC.";
   if (arquivo.size > TAMANHO_MAXIMO_FOTO) return "A imagem deve ter no máximo 10 MB.";
   return null;
+}
+
+// O pôster do feed segue o formato da 1ª foto, entre retrato 4:5 e paisagem 16:9
+const PROPORCAO_MINIMA = 4 / 5;
+const PROPORCAO_MAXIMA = 16 / 9;
+
+export function proporcaoDoPoster(foto: Foto): number {
+  return Math.min(PROPORCAO_MAXIMA, Math.max(PROPORCAO_MINIMA, foto.largura / foto.altura));
 }

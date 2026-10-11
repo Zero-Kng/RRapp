@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
-import { validarFoto } from "./fotos";
+import { foto } from "../testes/dados";
+import { proporcaoDoPoster, validarFoto } from "./fotos";
 
 const arquivo = (nome: string, tipo: string, tamanho = 10) =>
   new File([new Uint8Array(tamanho)], nome, { type: tipo });
@@ -31,4 +32,12 @@ test("recusa acima de 10 MB", () => {
   expect(validarFoto(arquivo("grande.jpg", "image/jpeg", 10 * 1024 * 1024 + 1))).toBe(
     "A imagem deve ter no máximo 10 MB.",
   );
+});
+
+test.each([
+  [1600, 1200, 4 / 3],
+  [900, 1600, 0.8],
+  [3000, 1000, 16 / 9],
+])("proporção do pôster de %i×%i", (largura, altura, esperada) => {
+  expect(proporcaoDoPoster(foto({ largura, altura }))).toBeCloseTo(esperada);
 });
