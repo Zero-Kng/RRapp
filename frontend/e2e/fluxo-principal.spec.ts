@@ -52,6 +52,16 @@ test("cadastro, busca, registro de visita e diário", async ({ page }) => {
   await page.getByRole("button", { name: "Salvar" }).click();
   await expect(page.getByRole("dialog")).toBeHidden();
 
+  // A visita com foto é o item mais recente do feed do Início
+  await page.goto("/");
+  const maisRecente = page
+    .getByRole("region", { name: "Visitas da comunidade" })
+    .getByRole("article")
+    .first();
+  await expect(maisRecente.getByRole("link", { name: "Aprazível" })).toBeVisible();
+  await expect(maisRecente.getByText("Teste automatizado.")).toBeVisible();
+  await expect(maisRecente.getByRole("button", { name: "Ver foto 1 de 1" })).toBeVisible();
+
   // 5. Diário com a foto, e os desejos já vazios
   await page.goto(`/u/${username}`);
   await expect(page.getByRole("link", { name: "Aprazível" })).toBeVisible();
@@ -73,6 +83,10 @@ test("cadastro, busca, registro de visita e diário", async ({ page }) => {
     expect(larguras.pagina).toBeLessThanOrEqual(larguras.tela);
   };
   await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/");
+  await expect(page.getByRole("region", { name: "Visitas da comunidade" })).toBeVisible();
+  await expect(page.getByRole("article").first()).toBeVisible();
+  await semRolagemLateral();
   await page.goto(paginaDoRestaurante);
   await expect(page.getByRole("button", { name: "Desejo" })).toBeVisible();
   await semRolagemLateral();
